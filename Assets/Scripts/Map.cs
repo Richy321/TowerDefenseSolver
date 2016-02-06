@@ -46,16 +46,16 @@ public class Map : MonoBehaviour
                 if (pathNode != null)
                 {
                     Gizmos.color = Color.grey;
-                    Gizmos.DrawCube(pathNode.transform.position, new Vector3(nodeWidth*0.25f, 0.1f, nodeHeight*0.25f));
+                    
                     if (path.Contains(pathNode))
                         Gizmos.color = Color.yellow;
                     if (!pathNode.walkable)
-                        Gizmos.color = Color.black;
-
+                        Gizmos.color = Color.magenta;
                     if(pathNode == startNode)
                         Gizmos.color = Color.green;
                     if(pathNode == endNode)
                         Gizmos.color = Color.red;
+                    Gizmos.DrawCube(pathNode.transform.position, new Vector3(nodeWidth * 0.25f, 0.1f, nodeHeight * 0.25f));
                 }
             }
         }
@@ -140,8 +140,7 @@ public class Map : MonoBehaviour
         if(endNode)
             DestroyImmediate(endNode.gameObject);
 
-        pathLine.SetPositions(new Vector3[0]);
-        pathLine.SetVertexCount(0);
+        pathLine.SetVertexCount(0);      
     }
 
 
