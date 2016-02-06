@@ -9,24 +9,13 @@ public class PathFinder
 
     public List<PathNode> FindPath(PathNode start, PathNode end, PathNode[,] grid)
     {
-        List<PathNode> openSet = new List<PathNode>();
+        Heap<PathNode> openSet = new Heap<PathNode>(grid.GetLength(0) * grid.GetLength(1));
         HashSet<PathNode> closedSet = new HashSet<PathNode>();
-
         openSet.Add(start);
 
         while (openSet.Count > 0)
         {
-            PathNode currentNode = openSet[0];
-            
-            //todo optimise this crap
-            for (int i = 1; i < openSet.Count; i++)
-            {
-                if (openSet[i].fCost < currentNode.fCost ||
-                    openSet[i].fCost == currentNode.fCost && openSet[i].hCost < currentNode.hCost)
-                    currentNode = openSet[i];
-            }
-
-            openSet.Remove(currentNode);
+            PathNode currentNode = openSet.RemoveFirst();
             closedSet.Add(currentNode);
 
             //path found
@@ -47,8 +36,9 @@ public class PathFinder
 
                     if(!openSet.Contains(neighbour))
                         openSet.Add(neighbour);
+                    else
+                        openSet.UpdateItem(neighbour);
                 }
-
             }
         }
 

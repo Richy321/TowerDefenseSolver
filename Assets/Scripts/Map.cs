@@ -32,9 +32,8 @@ public class Map : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-	    path = pathFinder.FindPath(startNode, endNode, grid);
-	    UpdatePathLineRenderer();
-
+	    //path = pathFinder.FindPath(startNode, endNode, grid);
+	    //UpdatePathLineRenderer();
 	}
 
     void OnDrawGizmos()
