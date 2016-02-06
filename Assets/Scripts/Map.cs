@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Map : MonoBehaviour
 {
@@ -14,16 +15,51 @@ public class Map : MonoBehaviour
     public PathNode startNode;
     public PathNode endNode;
 
+    public PathFinder pathFinder = new PathFinder();
+    public List<PathNode> path = new List<PathNode>();
+
+    public LineRenderer pathLine;
+
+    private float nodeWidth;
+    private float nodeHeight;
+
     // Use this for initialization
-    void Start () {
-	
-	}
+    void Start ()
+    {
+        pathLine = GetComponent<LineRenderer>();
+    }
 	
 	// Update is called once per frame
 	void Update ()
-    {
-	
+	{
+	    path = pathFinder.FindPath(startNode, endNode, grid);
+	    UpdatePathLineRenderer();
+
 	}
+
+    void OnDrawGizmos()
+    {
+        if (grid != null && grid.Length > 0)
+        {
+            foreach (PathNode pathNode in grid)
+            {
+                if (pathNode != null)
+                {
+                    Gizmos.color = Color.grey;
+                    Gizmos.DrawCube(pathNode.transform.position, new Vector3(nodeWidth*0.25f, 0.1f, nodeHeight*0.25f));
+                    if (path.Contains(pathNode))
+                        Gizmos.color = Color.yellow;
+                    if (!pathNode.walkable)
+                        Gizmos.color = Color.black;
+
+                    if(pathNode == startNode)
+                        Gizmos.color = Color.green;
+                    if(pathNode == endNode)
+                        Gizmos.color = Color.red;
+                }
+            }
+        }
+    }
 
     public void BuildGrid()
     {
@@ -32,8 +68,8 @@ public class Map : MonoBehaviour
 
         MeshFilter nodeMesh = nodePrefab.GetComponent<MeshFilter>();
 
-        float nodeWidth = nodeMesh.sharedMesh.bounds.size.x;
-        float nodeHeight = nodeMesh.sharedMesh.bounds.size.y;
+        nodeWidth = nodeMesh.sharedMesh.bounds.size.x;
+        nodeHeight = nodeMesh.sharedMesh.bounds.size.y;
         bool isAltMaterial = false;
 
         for (int x = 0; x < nodeCountX; x++)
@@ -42,6 +78,7 @@ public class Map : MonoBehaviour
             {
                 Vector3 pos = new Vector3(x * nodeWidth, 0.0f, z * nodeHeight);
                 GameObject obj = Instantiate(nodePrefab, pos, nodePrefab.transform.localRotation) as GameObject;
+                obj.name = "Grid " + x + "," + z;
                 if (isAltMaterial)
                 {
                     MeshRenderer objMesh = obj.GetComponent<MeshRenderer>();
@@ -56,27 +93,14 @@ public class Map : MonoBehaviour
                 isAltMaterial = !isAltMaterial;
         }
 
-        PathNode midTop = grid[nodeCountX / 2, nodeCountZ - 1].GetComponent<PathNode>();
-        PathNode midBottom = grid[nodeCountX / 2, 0].GetComponent<PathNode>();
 
-        Vector3 startPos = new Vector3(midTop.transform.position.x, 0.0f, midTop.transform.position.z + nodeHeight);
-        GameObject startNodeGO = Instantiate(nodePrefab, startPos, nodePrefab.transform.localRotation) as GameObject;
-        startNodeGO.transform.parent = transform;
-        startNode = startNodeGO.GetComponent<PathNode>();
-        MeshRenderer meshRenderer = startNodeGO.GetComponent<MeshRenderer>();
-        meshRenderer.sharedMaterial = startMaterial;
+        startNode = grid[nodeCountX/2, nodeCountZ - 1];
+        endNode = grid[nodeCountX/2, 0];
 
-        Vector3 endPos = new Vector3(midBottom.transform.position.x, 0.0f, midBottom.transform.position.z - nodeHeight);
-        GameObject endNodeGO = Instantiate(nodePrefab, endPos, nodePrefab.transform.localRotation) as GameObject;
-        endNode = endNodeGO.GetComponent<PathNode>();
-        endNodeGO.transform.parent = transform;
-        meshRenderer = endNodeGO.GetComponent<MeshRenderer>();
-        meshRenderer.sharedMaterial = endMaterial;
-
-        BuildPathNodeLinks(midTop, midBottom);
+        BuildPathNodeLinks();
     }
 
-    public void BuildPathNodeLinks(PathNode midTop, PathNode midBottom)
+    public void BuildPathNodeLinks()
     {
         PathNode pathNode;
         for (int x = 0; x < nodeCountX; x++)
@@ -84,6 +108,8 @@ public class Map : MonoBehaviour
             for (int z = 0; z < nodeCountZ; z++)
             {
                 pathNode = grid[x, z];
+                pathNode.gridX = x;
+                pathNode.gridY = z;
                 pathNode.walkable = true;
                 if (z < nodeCountZ - 1)
                     pathNode.north = grid[x, z + 1];
@@ -95,15 +121,6 @@ public class Map : MonoBehaviour
                     pathNode.west = grid[x - 1, z];
             }
         }
-
-        pathNode = startNode.GetComponent<PathNode>();
-        
-        pathNode.south = midTop;
-        midTop.north = pathNode;
-
-        pathNode = endNode.GetComponent<PathNode>();
-        pathNode.north = midBottom;
-        midBottom.south = pathNode;
     }
 
     public void ClearGrid()
@@ -122,5 +139,25 @@ public class Map : MonoBehaviour
 
         if(endNode)
             DestroyImmediate(endNode.gameObject);
+
+        pathLine.SetPositions(new Vector3[0]);
+        pathLine.SetVertexCount(0);
+    }
+
+
+    public void UpdatePathLineRenderer()
+    {
+        const float lineHeight = 0.2f;
+        pathLine.SetVertexCount(path.Count + 4);
+        pathLine.SetPosition(0, new Vector3(startNode.gameObject.transform.localPosition.x, lineHeight, startNode.transform.localPosition.z + nodeHeight *0.5f));
+        pathLine.SetPosition(1, new Vector3(startNode.gameObject.transform.localPosition.x, lineHeight, startNode.transform.localPosition.z));
+
+        for (int i=0; i < path.Count; i++)
+        {
+            pathLine.SetPosition(i+2, new Vector3(path[i].gameObject.transform.localPosition.x, lineHeight, path[i].transform.localPosition.z));
+        }
+
+        pathLine.SetPosition(path.Count + 2, new Vector3(endNode.gameObject.transform.localPosition.x, lineHeight, endNode.transform.localPosition.z));
+        pathLine.SetPosition(path.Count + 3, new Vector3(endNode.gameObject.transform.localPosition.x, lineHeight, endNode.transform.localPosition.z - nodeHeight * 0.5f));
     }
 }

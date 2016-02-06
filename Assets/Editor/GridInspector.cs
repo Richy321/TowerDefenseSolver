@@ -20,5 +20,11 @@ public class GridInspector : Editor
         {
             curMapScript.ClearGrid();
         }
+
+        if (GUILayout.Button("Find Path"))
+        {
+            curMapScript.path = curMapScript.pathFinder.FindPath(curMapScript.startNode, curMapScript.endNode, curMapScript.grid);
+            curMapScript.UpdatePathLineRenderer();
+        }
     }
 }
