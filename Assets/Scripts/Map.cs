@@ -7,12 +7,12 @@ public class Map : MonoBehaviour
     public int nodeCountZ;
 
     public GameObject nodePrefab;
-    public GameObject[,] grid;
+    public PathNode[,] grid;
     public Material altMaterial;
     public Material startMaterial;
     public Material endMaterial;
-    public GameObject startNode;
-    public GameObject endNode;
+    public PathNode startNode;
+    public PathNode endNode;
 
     // Use this for initialization
     void Start () {
@@ -28,7 +28,7 @@ public class Map : MonoBehaviour
     public void BuildGrid()
     {
         ClearGrid();
-        grid = new GameObject[nodeCountX, nodeCountZ];
+        grid = new PathNode[nodeCountX, nodeCountZ];
 
         MeshFilter nodeMesh = nodePrefab.GetComponent<MeshFilter>();
 
@@ -49,54 +49,59 @@ public class Map : MonoBehaviour
                 }
 
                 obj.transform.SetParent(transform);
-                grid[x, z] = obj;
+                grid[x, z] = obj.GetComponent<PathNode>();
                 isAltMaterial = !isAltMaterial;
             }
+            if (nodeCountZ%2 == 0)
+                isAltMaterial = !isAltMaterial;
         }
 
-        Vector3 startPos = new Vector3((nodeCountX * nodeWidth) * 0.5f - (nodeWidth * 0.5f), 0.0f, nodeCountZ * nodeHeight);
-        startNode = Instantiate(nodePrefab, startPos, nodePrefab.transform.localRotation) as GameObject;
-        startNode.transform.parent = transform;
-        MeshRenderer meshRenderer = startNode.GetComponent<MeshRenderer>();
+        PathNode midTop = grid[nodeCountX / 2, nodeCountZ - 1].GetComponent<PathNode>();
+        PathNode midBottom = grid[nodeCountX / 2, 0].GetComponent<PathNode>();
+
+        Vector3 startPos = new Vector3(midTop.transform.position.x, 0.0f, midTop.transform.position.z + nodeHeight);
+        GameObject startNodeGO = Instantiate(nodePrefab, startPos, nodePrefab.transform.localRotation) as GameObject;
+        startNodeGO.transform.parent = transform;
+        startNode = startNodeGO.GetComponent<PathNode>();
+        MeshRenderer meshRenderer = startNodeGO.GetComponent<MeshRenderer>();
         meshRenderer.sharedMaterial = startMaterial;
 
-        Vector3 endPos = new Vector3((nodeCountX * nodeWidth) * 0.5f - (nodeWidth * 0.5f), 0.0f, -nodeHeight);
-        endNode = Instantiate(nodePrefab, endPos, nodePrefab.transform.localRotation) as GameObject;
-        endNode.transform.parent = transform;
-        meshRenderer = endNode.GetComponent<MeshRenderer>();
+        Vector3 endPos = new Vector3(midBottom.transform.position.x, 0.0f, midBottom.transform.position.z - nodeHeight);
+        GameObject endNodeGO = Instantiate(nodePrefab, endPos, nodePrefab.transform.localRotation) as GameObject;
+        endNode = endNodeGO.GetComponent<PathNode>();
+        endNodeGO.transform.parent = transform;
+        meshRenderer = endNodeGO.GetComponent<MeshRenderer>();
         meshRenderer.sharedMaterial = endMaterial;
 
-
-        BuildPathNodeLinks();
+        BuildPathNodeLinks(midTop, midBottom);
     }
 
-    public void BuildPathNodeLinks()
+    public void BuildPathNodeLinks(PathNode midTop, PathNode midBottom)
     {
         PathNode pathNode;
         for (int x = 0; x < nodeCountX; x++)
         {
             for (int z = 0; z < nodeCountZ; z++)
             {
-                pathNode = grid[x, z].GetComponent<PathNode>();
+                pathNode = grid[x, z];
                 pathNode.walkable = true;
                 if (z < nodeCountZ - 1)
-                    pathNode.north = grid[x, z + 1].GetComponent<PathNode>();
+                    pathNode.north = grid[x, z + 1];
                 if (z > 0)
-                    pathNode.south = grid[x, z - 1].GetComponent<PathNode>();
+                    pathNode.south = grid[x, z - 1];
                 if (x < nodeCountX - 1)
-                    pathNode.east = grid[x + 1, z].GetComponent<PathNode>();
+                    pathNode.east = grid[x + 1, z];
                 if (x > 0)
-                    pathNode.west = grid[x - 1, z].GetComponent<PathNode>();
+                    pathNode.west = grid[x - 1, z];
             }
         }
 
         pathNode = startNode.GetComponent<PathNode>();
-        PathNode midTop = grid[nodeCountX / 2, nodeCountZ-1].GetComponent<PathNode>();
+        
         pathNode.south = midTop;
         midTop.north = pathNode;
 
         pathNode = endNode.GetComponent<PathNode>();
-        PathNode midBottom = grid[nodeCountX/2, 0].GetComponent<PathNode>();
         pathNode.north = midBottom;
         midBottom.south = pathNode;
     }
@@ -105,16 +110,17 @@ public class Map : MonoBehaviour
     {
         if (grid != null && grid.Length > 0)
         {
-            foreach (GameObject o in grid)
+            foreach (PathNode o in grid)
             {
-                DestroyImmediate(o);
+                if(o)
+                    DestroyImmediate(o.gameObject);
             }
         }
 
         if(startNode)
-            DestroyImmediate(startNode);
+            DestroyImmediate(startNode.gameObject);
 
         if(endNode)
-            DestroyImmediate(endNode);
+            DestroyImmediate(endNode.gameObject);
     }
 }
