@@ -15,7 +15,6 @@ public class Map : MonoBehaviour
     public PathNode startNode;
     public PathNode endNode;
 
-    public PathFinder pathFinder = new PathFinder();
     public List<PathNode> path = new List<PathNode>();
 
     public LineRenderer pathLine;

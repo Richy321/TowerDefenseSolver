@@ -1,5 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
+using System.Linq;
 using UnityEditor;
 
 
@@ -23,8 +25,18 @@ public class GridInspector : Editor
 
         if (GUILayout.Button("Find Path"))
         {
-            curMapScript.path = curMapScript.pathFinder.FindPath(curMapScript.startNode, curMapScript.endNode, curMapScript.grid);
-            curMapScript.UpdatePathLineRenderer();
+            PathRequestManager.RequestPath(curMapScript.startNode, curMapScript.endNode, curMapScript.grid, PathResultCallback);
+
         }
+    }
+
+    private void PathResultCallback(PathNode[] pathNodes, bool b)
+    {
+        Map curMapScript = (Map)target;
+        curMapScript.path = pathNodes.ToList();
+        curMapScript.UpdatePathLineRenderer();
+        SceneView.RepaintAll();
+        EditorUtility.SetDirty(target);
+        HandleUtility.Repaint();
     }
 }
