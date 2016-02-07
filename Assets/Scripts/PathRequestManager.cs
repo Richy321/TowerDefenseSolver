@@ -23,7 +23,7 @@ public class PathRequestManager : MonoBehaviour
         }
     }
 
-    public static void RequestPath(PathNode pathStart, PathNode pathEnd, PathNode[,] pathGrid, Action<PathNode[], bool> callback)
+    public static void RequestPath(PathNode pathStart, PathNode pathEnd, List<List<PathNode>> pathGrid, Action<PathNode[], bool> callback)
     {
         PathRequest newRequest = new PathRequest(pathStart, pathEnd, pathGrid, callback);
 
@@ -52,10 +52,10 @@ public class PathRequestManager : MonoBehaviour
     {
         public PathNode pathStart;
         public PathNode pathEnd;
-        public PathNode[,] pathGrid;
+        public List<List<PathNode>> pathGrid;
         public Action<PathNode[], bool> callback;
 
-        public PathRequest(PathNode start, PathNode end, PathNode[,] grid, Action<PathNode[], bool> callback)
+        public PathRequest(PathNode start, PathNode end, List<List<PathNode>> grid, Action<PathNode[], bool> callback)
         {
             pathStart = start;
             pathEnd = end;

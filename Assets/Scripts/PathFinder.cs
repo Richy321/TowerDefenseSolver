@@ -13,18 +13,18 @@ public class PathFinder : MonoBehaviour
         requestManager = GetComponent<PathRequestManager>();
     }
 
-    public void StartFindPath(PathNode pathStart, PathNode pathEnd, PathNode[,] grid)
+    public void StartFindPath(PathNode pathStart, PathNode pathEnd, List<List<PathNode>> grid)
     {
         StartCoroutine(FindPath(pathStart, pathEnd, grid));
     }
 
-    public IEnumerator FindPath(PathNode start, PathNode end, PathNode[,] grid)
+    public bool FindPathImmediate(PathNode start, PathNode end, List<List<PathNode>> grid, out List<PathNode> path)
     {
-        List<PathNode> path = new List<PathNode>();
+        path = new List<PathNode>();
         bool success = false;
         if (start.walkable && end.walkable)
         {
-            Heap<PathNode> openSet = new Heap<PathNode>(grid.GetLength(0)*grid.GetLength(1));
+            Heap<PathNode> openSet = new Heap<PathNode>(grid.Count * grid[0].Count);
             HashSet<PathNode> closedSet = new HashSet<PathNode>();
             openSet.Add(start);
 
@@ -60,11 +60,18 @@ public class PathFinder : MonoBehaviour
                 }
             }
         }
-
         if (success)
         {
             path = RetracePath(start, end);
         }
+
+        return success;
+    }
+
+    public IEnumerator FindPath(PathNode start, PathNode end, List<List<PathNode>> grid)
+    {
+        List<PathNode> path;
+        bool success = FindPathImmediate(start, end, grid, out path);
 
         yield return null;
 
@@ -81,9 +88,9 @@ public class PathFinder : MonoBehaviour
         Stack<PathNode> path = new Stack<PathNode>();
         PathNode curNode = end; //trace backwards
 
-        while (curNode != start)
+        while (curNode != null)
         {
-            path.Push(curNode.parent);
+            path.Push(curNode);
             curNode = curNode.parent;
         }
         
@@ -96,20 +103,24 @@ public class PathFinder : MonoBehaviour
         Vector2 oldDirection = Vector2.zero;
         PathNode curNode;
 
-        while (pathStack.Count > 1)
+        while (pathStack.Count > 0)
         {
             curNode = pathStack.Pop();
-            PathNode nextNode = pathStack.Peek();
-            Vector2 curDirection = new Vector2(nextNode.gridX - curNode.gridX, nextNode.gridY - curNode.gridY);
+            Vector2 curDirection = Vector2.zero;
+
+            if (pathStack.Count != 0) //last
+            {
+                PathNode nextNode = pathStack.Peek();
+                curDirection = new Vector2(nextNode.gridX - curNode.gridX, nextNode.gridY - curNode.gridY);
+            }
+
             if (curDirection != oldDirection)
             {
                 simplifiedPath.Add(curNode);
             }
             oldDirection = curDirection;
         }
-        simplifiedPath.Add(pathStack.Pop());
 
         return simplifiedPath;
-    } 
-
+    }
 }
