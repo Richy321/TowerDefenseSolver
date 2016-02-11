@@ -38,9 +38,14 @@ public class Map : MonoBehaviour, IMap
     // Use this for initialization
     void Start ()
     {
+        InitialiseTestTowerSetup();
+        FindPath();
+    }
+
+    void Awake()
+    {
         pathLine = GetComponent<LineRenderer>();
         BuildGrid();
-        FindPath();
     }
 	
 	// Update is called once per frame
@@ -255,21 +260,52 @@ public class Map : MonoBehaviour, IMap
 
     public void AddTower(int rowIndex, int colIndex, TowerType type)
     {
-        throw new NotImplementedException();
+        if (grid[rowIndex][colIndex].walkable)
+        {
+            GameObject tower = objectPool.GetTower(type);
+            towers.Add(tower);
+            tower.transform.parent = towerContainer.transform;
+            tower.transform.position = grid[rowIndex][colIndex].gameObject.transform.position;
+            grid[rowIndex][colIndex].walkable = false;
+            tower.SetActive(true);
+        }
     }
 
     public void RemoveTower(int rowIndex, int colIndex)
     {
-        throw new NotImplementedException();
+        grid[rowIndex][colIndex].walkable = true;
+        objectPool.ReleaseTower(grid[rowIndex][colIndex].gameObject);
     }
 
     public void ClearTowers()
     {
-        throw new NotImplementedException();
+        foreach (GameObject tower in towers)
+        {
+            objectPool.ReleaseTower(tower);
+        }
+        foreach (List<PathNode> pathNodes in grid)
+        {
+            foreach (var pathNode in pathNodes)
+            {
+                pathNode.walkable = true;
+            }
+        }
     }
 
     public void SetTowers(TowerType[,] towerLayout)
     {
         throw new NotImplementedException();
+    }
+
+
+
+    public void InitialiseTestTowerSetup()
+    {
+        ClearTowers();
+        AddTower(0,0, TowerType.SingleDamage);
+        AddTower(5,5, TowerType.SingleDamage);
+        AddTower(5,6, TowerType.SingleDamage);
+        AddTower(5, 7, TowerType.SingleDamage);
+        AddTower(5, 8, TowerType.SingleDamage);
     }
 }

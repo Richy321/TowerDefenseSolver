@@ -30,7 +30,7 @@ public class ObjectPool : MonoBehaviour
     public Dictionary<EnemyType, Pool> EnemyPools = new Dictionary<EnemyType, Pool>(); 
      
     // Use this for initialization
-    void Start ()
+    void Awake ()
     {
         foreach (TowerType towerType in Enum.GetValues(typeof (TowerType)))
         {
@@ -147,7 +147,9 @@ public class ObjectPool : MonoBehaviour
         EnemyPools[enemy.type].active.Remove(obj);
         EnemyPools[enemy.type].inactive.Add(obj);
         obj.SetActive(false);
+
         obj.transform.parent = EnemyContainer.transform;
+        obj.transform.position = offscreenHoldingPoint;
     }
 
     public void ReleaseTower(GameObject obj)
@@ -158,5 +160,6 @@ public class ObjectPool : MonoBehaviour
         obj.SetActive(false);
 
         obj.transform.parent = TowerContainer.transform;
+        obj.transform.position = offscreenHoldingPoint;
     }
 }
