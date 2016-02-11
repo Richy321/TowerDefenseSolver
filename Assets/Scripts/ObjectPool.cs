@@ -34,6 +34,8 @@ public class ObjectPool : MonoBehaviour
     {
         foreach (TowerType towerType in Enum.GetValues(typeof (TowerType)))
         {
+            if (towerType == TowerType.None)
+                continue;
             TowerPools.Add(towerType, new Pool());
             for (int i = 0; i < towerInitialiseCount; i++)
                 TowerPools[towerType].inactive.Add(CreateTower(towerType));
@@ -65,7 +67,7 @@ public class ObjectPool : MonoBehaviour
                 throw new ArgumentOutOfRangeException("type", type, null);
         }
         tower.transform.parent = TowerContainer.transform;
-
+        tower.SetActive(false);
         return tower;
     }
 
@@ -86,7 +88,7 @@ public class ObjectPool : MonoBehaviour
         }
 
         enemy.transform.parent = EnemyContainer.transform;
-
+        enemy.SetActive(false);
         return enemy;
     }
 
@@ -150,7 +152,7 @@ public class ObjectPool : MonoBehaviour
 
     public void ReleaseTower(GameObject obj)
     {
-        Tower tower = obj.GetComponent<Tower>();
+        BaseTower tower = obj.GetComponent<BaseTower>();
         TowerPools[tower.type].active.Remove(obj);
         TowerPools[tower.type].inactive.Add(obj);
         obj.SetActive(false);

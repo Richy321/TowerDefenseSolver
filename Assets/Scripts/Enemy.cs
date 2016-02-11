@@ -5,14 +5,15 @@ using System.Collections.Generic;
 
 public class Enemy : MonoBehaviour
 {
-    public Transform target;
-    public float speed = 5;
-    public int health = 10;
+    public float speed = 10;
+    public float health = 10;
     public List<Vector3> path;
     private int targetIndex;
     public EnemyType type;
+    public EnemyTargettingType targettingType;
 
-    public Action<GameObject> onReachedEnd; 
+    public Action<GameObject> onReachedEnd;
+    public Action<GameObject> onDied; 
 
     // Use this for initialization
     void Start ()
@@ -47,7 +48,7 @@ public class Enemy : MonoBehaviour
                 currentWaypoint = path[targetIndex];
             }
             
-            transform.position = Vector3.MoveTowards(transform.position, currentWaypoint, speed);
+            transform.position = Vector3.MoveTowards(transform.position, currentWaypoint, speed * Time.deltaTime);
             yield return null;
         }
     }
@@ -58,5 +59,21 @@ public class Enemy : MonoBehaviour
             onReachedEnd(gameObject);
     }
 
+    /// <summary>
+    /// Standard application of damage
+    /// </summary>
+    /// <param name="amount">Damage to Take</param>
+    /// <returns>Returns false on death</returns>
+    public bool TakeDamage(float amount)
+    {
+        health -= amount;
+        if (health <= 0)
+        {
+            if (onDied != null)
+                onDied(gameObject);
+            return false;
+        }
+        return true;
+    }
 
 }

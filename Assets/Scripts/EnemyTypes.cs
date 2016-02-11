@@ -1,5 +1,13 @@
-﻿public enum EnemyType
+﻿using System;
+
+public enum EnemyType
 {
     Fast,
-    Strong
+    Strong,
+}
+
+public enum EnemyTargettingType
+{
+    Ground,
+    Air
 }

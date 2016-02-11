@@ -15,6 +15,7 @@ public class WaveManager : MonoBehaviour
     public bool isActive;
     public bool isInWave;
     public int waveIndex;
+    public int waveSpawnIndex;
     public List<Map> maps = new List<Map>();
     public List<Wave> waves = new List<Wave>(); 
 
@@ -37,19 +38,17 @@ public class WaveManager : MonoBehaviour
         }
 	}
 
-
     public void SpawnWave(int i)
     {
         isInWave = true;
         StartCoroutine("DoWave", waves[waveIndex]);
     }
 
-
     private IEnumerator DoWave(Wave wave)
     {
         foreach (Map map in maps)
         {
-            for (int i = 0; i < wave.count; i++)
+            for (waveSpawnIndex = 0; waveSpawnIndex < wave.count; waveSpawnIndex++)
             {
                 map.SpawnEnemy(wave.type);
                 yield return new WaitForSeconds(wave.spawnInterval);

@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Deployment.Internal;
 using System.Linq;
+using Assets.Scripts;
+using System;
 
-public class Map : MonoBehaviour
+public class Map : MonoBehaviour, IMap
 {
     public int nodeCountX;
     public int nodeCountZ;
@@ -222,12 +224,9 @@ public class Map : MonoBehaviour
         
         enemies.Add(enemy);
         enemyScript.onReachedEnd += OnEnemyReachesEnd;
-        enemyScript.Go();
-    }
+        enemyScript.onDied += OnEnemyDied;
 
-    public void SpawnTower(TowerType type, int xGridIndex, int yGridIndex)
-    {
-        
+        enemyScript.Go();
     }
 
     public bool GetPath()
@@ -243,5 +242,34 @@ public class Map : MonoBehaviour
         objectPool.ReleaseEnemy(obj);
         enemyReachesEndCount++;
         Debug.Log("Enemy Reached End");
+    }
+
+    private void OnEnemyDied(GameObject obj)
+    {
+        obj.GetComponent<Enemy>().onDied -= OnEnemyDied;
+        enemies.Remove(obj);
+        obj.transform.parent = null;
+        objectPool.ReleaseEnemy(obj);
+        Debug.Log("Enemy Died");
+    }
+
+    public void AddTower(int rowIndex, int colIndex, TowerType type)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void RemoveTower(int rowIndex, int colIndex)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void ClearTowers()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void SetTowers(TowerType[,] towerLayout)
+    {
+        throw new NotImplementedException();
     }
 }
