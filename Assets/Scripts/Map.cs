@@ -297,8 +297,6 @@ public class Map : MonoBehaviour, IMap
         throw new NotImplementedException();
     }
 
-
-
     public void InitialiseTestTowerSetup()
     {
         ClearTowers();
