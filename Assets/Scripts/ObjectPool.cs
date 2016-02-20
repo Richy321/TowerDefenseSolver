@@ -32,6 +32,7 @@ public class ObjectPool : MonoBehaviour
     // Use this for initialization
     void Awake ()
     {
+        TowerPools.Clear();
         foreach (TowerType towerType in Enum.GetValues(typeof (TowerType)))
         {
             if (towerType == TowerType.None)
@@ -118,26 +119,26 @@ public class ObjectPool : MonoBehaviour
 
     public GameObject GetTower(TowerType type)
     {
-        if (TowerPools.ContainsKey(type))
+        if (!TowerPools.ContainsKey(type))
         {
-            Pool pool = TowerPools[type];
-            if (pool.inactive.Count <= 0)
-            {
-                pool.inactive.Add(CreateTower(type));
-                Debug.LogWarning("Warning! - Had to create new Enemy, inactive list was empty");
-            }
+            Debug.LogWarning("Warning! - Asked for enemy type that doesn't exist in the pool - Creating on the fly");
+            TowerPools.Add(type, new Pool());
+            for (int i = 0; i < towerInitialiseCount; i++)
+                TowerPools[type].inactive.Add(CreateTower(type));
+        }
 
-            GameObject obj = pool.inactive[0];
-            pool.inactive.RemoveAt(0);
-            pool.active.Add(obj);
-            obj.SetActive(true);
-            return obj;
-        }
-        else
+        Pool pool = TowerPools[type];
+        if (pool.inactive.Count <= 0)
         {
-            Debug.LogError("Asked for enemy type that doesn't exist in the pool");
-            return null;
+            pool.inactive.Add(CreateTower(type));
+            Debug.LogWarning("Warning! - Had to create new Enemyon the fly, inactive list was empty");
         }
+
+        GameObject obj = pool.inactive[0];
+        pool.inactive.RemoveAt(0);
+        pool.active.Add(obj);
+        obj.SetActive(true);
+        return obj;
     }
 
 

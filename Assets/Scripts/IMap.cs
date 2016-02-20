@@ -11,6 +11,6 @@ namespace Assets.Scripts
         void AddTower(int rowIndex, int colIndex, TowerType type);
         void RemoveTower(int rowIndex, int colIndex);
         void ClearTowers();
-        void SetTowers(TowerType[,] towerLayout);
+        void SetTowers(MapChromosome towerLayout);
     }
 }

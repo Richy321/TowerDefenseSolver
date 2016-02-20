@@ -30,6 +30,29 @@ public class GridInspector : Editor
             SceneView.RepaintAll();
             EditorUtility.SetDirty(target);
         }
+
+
+        if (GUILayout.Button("Test Tower Layout"))
+        {
+            curMapScript.CreateRandomTowerLayout();
+            SceneView.RepaintAll();
+            EditorUtility.SetDirty(target);
+        }
+
+        if (GUILayout.Button("Randomise Towers"))
+        {
+            curMapScript.CreateRandomTowerLayout();
+            SceneView.RepaintAll();
+            EditorUtility.SetDirty(target);
+        }
+
+        if (GUILayout.Button("Clear Towers"))
+        {
+            curMapScript.ClearTowers();
+            SceneView.RepaintAll();
+            EditorUtility.SetDirty(target);
+        }
+
     }
 
     private void PathResultCallback(PathNode[] pathNodes, bool b)

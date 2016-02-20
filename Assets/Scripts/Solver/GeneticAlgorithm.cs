@@ -6,17 +6,25 @@ using Random = UnityEngine.Random;
 
 namespace Assets.Scripts
 {
-    public interface IChromosome
+    public interface IChromosome<T>
     {
         void Randomise();
-        int GetLength();
-        int GetFitness();
-        void Crossover(int pos, IChromosome other);
-        void Mutate();
-        IChromosome Clone();
+        int Length { get; }
+        int Fitness { get; }
+        void Crossover(int pos, T other);
+        void Mutate(int geneIndex);
+        T Clone();
     }
 
-    class GeneticAlgorithm<T> where T : IChromosome, new()
+    class GeneticAlgorithm
+    {
+        
+
+
+    }
+
+
+    class GeneticAlgorithm<T> where T : IChromosome<T>, new()
     {
         public static int populationSize = 25;
 
@@ -61,7 +69,7 @@ namespace Assets.Scripts
             onRequestGenerateFitness(population); //fill in fitness values (by ref)
 
             //sort fitness high->low
-            population.Sort((a,b) => b.GetFitness().CompareTo(a.GetFitness()));
+            population.Sort((a,b) => b.Fitness.CompareTo(a.Fitness));
         }
 
         public void EvolvePopulation()
@@ -69,7 +77,7 @@ namespace Assets.Scripts
             GeneratePopulationFitness();
 
             totalFitness = 0;
-            population.ForEach(v => totalFitness += v.GetFitness()); //get total fitness
+            population.ForEach(v => totalFitness += v.Fitness); //get total fitness
 
             List<T> newPopulation = new List<T>();
             //Selection Process
@@ -106,6 +114,10 @@ namespace Assets.Scripts
                 //Apply Mutation Genetic Operator
                 Mutate(offspringA);
                 Mutate(offspringB);
+
+                newPopulation.Add(offspringA);
+                newPopulation.Add(offspringB);
+
             }
             generationNo++;
         }
@@ -117,15 +129,14 @@ namespace Assets.Scripts
 
             float runningNormalisedFitness = 0;
 
-            //TODO - switch to binary search instead of linear...
             for (int i = 0; i < populationSize; i++)
             {
-                runningNormalisedFitness += (float) population[i].GetFitness()/totalFitness;
+                runningNormalisedFitness += (float) population[i].Fitness / totalFitness;
 
                 if (runningNormalisedFitness > randNumber)
                 {
                     //return a clone
-                    return (T) population[Mathf.Max(0, i)].Clone();
+                    return population[Mathf.Max(0, i)].Clone();
                 }
             }
 
@@ -148,21 +159,21 @@ namespace Assets.Scripts
             throw new NotImplementedException();
         }
         
-        void Crossover(T a, T b)
+        public virtual void Crossover(T a, T b)
         {
             if (Random.value <= crossoverRate)
             {
-                int splitPoint = Random.Range(0, a.GetLength()-1);
+                int splitPoint = Random.Range(0, a.Length -1);
                 a.Crossover(splitPoint, b);
             }
         }
 
-        void Mutate(T chromosome)
+        public virtual void Mutate(T chromosome)
         {
-            for (int i = 0; i < chromosome.GetLength(); i++)
+            for (int i = 0; i < chromosome.Length; i++)
             {
                 if (Random.value <= mutationRate)
-                    chromosome.Mutate();
+                    chromosome.Mutate(i);
             }
         }
     }

@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using System.Deployment.Internal;
 using System.Linq;
 using Assets.Scripts;
 using System;
@@ -15,8 +13,9 @@ public class Map : MonoBehaviour, IMap
     public ObjectPool objectPool;
     public GameObject enemyContainer;
     public GameObject towerContainer;
+    public MapChromosome mapChromosome;
 
-    public List<List<PathNode>> grid;
+    public List<List<GridNode>> grid;
     public Material altMaterial;
     public Material startMaterial;
     public Material endMaterial;
@@ -34,18 +33,20 @@ public class Map : MonoBehaviour, IMap
 
     private int enemyReachesEndCount = 0;
 
-
     // Use this for initialization
     void Start ()
     {
-        InitialiseTestTowerSetup();
-        FindPath();
+        //InitialiseTestTowerLayout();
+        //FindPath();
     }
 
     void Awake()
     {
-        pathLine = GetComponent<LineRenderer>();
+        if (!mapChromosome) mapChromosome = GetComponent<MapChromosome>();
+        if (!pathLine) pathLine = GetComponent<LineRenderer>();
         BuildGrid();
+
+        mapChromosome.Initialise();
     }
 	
 	// Update is called once per frame
@@ -59,9 +60,9 @@ public class Map : MonoBehaviour, IMap
     {
         if (grid != null)
         {
-            foreach (List<PathNode> list in grid)
+            foreach (List<GridNode> list in grid)
             {
-                foreach (PathNode pathNode in list)
+                foreach (GridNode pathNode in list)
                 {
                     if (pathNode != null)
                     {
@@ -85,10 +86,10 @@ public class Map : MonoBehaviour, IMap
     public void BuildGrid()
     {
         ClearGrid();
-        grid = new List<List<PathNode>>(nodeCountX);
+        grid = new List<List<GridNode>>(nodeCountX);
         for (int i = 0; i < nodeCountX; i++)
         {
-            grid.Add(new List<PathNode>());
+            grid.Add(new List<GridNode>());
         }
         MeshFilter nodeMesh = nodePrefab.GetComponent<MeshFilter>();
 
@@ -96,9 +97,9 @@ public class Map : MonoBehaviour, IMap
         nodeHeight = nodeMesh.sharedMesh.bounds.size.y;
         bool isAltMaterial = false;
 
-        for (int x = 0; x < nodeCountX; x++)
+        for (int z = 0; z < nodeCountZ; z++)
         {
-            for (int z = 0; z < nodeCountZ; z++)
+            for (int x = 0; x < nodeCountX; x++)
             {
                 Vector3 pos = new Vector3(x * nodeWidth, 0.0f, z * nodeHeight);
                 GameObject obj = Instantiate(nodePrefab, pos, nodePrefab.transform.localRotation) as GameObject;
@@ -110,7 +111,7 @@ public class Map : MonoBehaviour, IMap
                 }
 
                 obj.transform.SetParent(transform);
-                grid[x].Add(obj.GetComponent<PathNode>());
+                grid[z].Add(obj.GetComponent<GridNode>());
                 isAltMaterial = !isAltMaterial;
             }
             if (nodeCountZ%2 == 0)
@@ -160,16 +161,16 @@ public class Map : MonoBehaviour, IMap
                 }
             }
         }
-        List<GameObject> pathNodse = new List<GameObject>();
+        List<GameObject> pathNodes = new List<GameObject>();
         for (int i = 0; i < gameObject.transform.childCount; i++)
         {
             GameObject child = gameObject.transform.GetChild(i).gameObject;
-            PathNode pathNode = child.GetComponent<PathNode>();
+            GridNode pathNode = child.GetComponent<GridNode>();
             if(pathNode != null)
-                pathNodse.Add(child);
+                pathNodes.Add(child);
         }
 
-        pathNodse.ForEach(o => DestroyImmediate(o));
+        pathNodes.ForEach(o => DestroyImmediate(o));
 
 
         if (startNode)
@@ -183,7 +184,8 @@ public class Map : MonoBehaviour, IMap
 
     public void FindPath()
     {
-        PathRequestManager.Instance.pathFinder.FindPathImmediate(startNode, endNode, grid, out path);
+        List<List<PathNode>> listPathNodes = grid.Cast<List<PathNode>>().ToList();
+        PathRequestManager.Instance.pathFinder.FindPathImmediate(startNode, endNode, listPathNodes, out path);
         UpdatePathLineRenderer();
     }
 
@@ -236,7 +238,8 @@ public class Map : MonoBehaviour, IMap
 
     public bool GetPath()
     {
-        return PathRequestManager.Instance.pathFinder.FindPathImmediate(startNode, endNode, grid, out path);
+        List<List<PathNode>> listPathNodes = grid.Cast<List<PathNode>>().ToList();
+        return PathRequestManager.Instance.pathFinder.FindPathImmediate(startNode, endNode, listPathNodes, out path);
     }
 
     private void OnEnemyReachesEnd(GameObject obj)
@@ -260,13 +263,14 @@ public class Map : MonoBehaviour, IMap
 
     public void AddTower(int rowIndex, int colIndex, TowerType type)
     {
-        if (grid[rowIndex][colIndex].walkable)
+        if (grid[rowIndex][colIndex].walkable && type != TowerType.None)
         {
             GameObject tower = objectPool.GetTower(type);
             towers.Add(tower);
             tower.transform.parent = towerContainer.transform;
             tower.transform.position = grid[rowIndex][colIndex].gameObject.transform.position;
             grid[rowIndex][colIndex].walkable = false;
+            grid[rowIndex][colIndex].towerType = type;
             tower.SetActive(true);
         }
     }
@@ -274,6 +278,7 @@ public class Map : MonoBehaviour, IMap
     public void RemoveTower(int rowIndex, int colIndex)
     {
         grid[rowIndex][colIndex].walkable = true;
+        grid[rowIndex][colIndex].towerType = TowerType.None;
         objectPool.ReleaseTower(grid[rowIndex][colIndex].gameObject);
     }
 
@@ -283,27 +288,48 @@ public class Map : MonoBehaviour, IMap
         {
             objectPool.ReleaseTower(tower);
         }
-        foreach (List<PathNode> pathNodes in grid)
+        towers.Clear();
+
+        foreach (List<GridNode> pathNodes in grid)
         {
             foreach (var pathNode in pathNodes)
             {
                 pathNode.walkable = true;
+                pathNode.towerType = TowerType.None;
             }
         }
     }
 
-    public void SetTowers(TowerType[,] towerLayout)
+    public void SetTowers(MapChromosome towerLayout)
     {
-        throw new NotImplementedException();
+        ClearTowers();
+        for (int z = 0; z < towerLayout.chromosome.Count; z++)
+        {
+            for (int x = 0; x < towerLayout.chromosome[z].Count; x++)
+            {
+                AddTower(z, x, towerLayout.chromosome[z][x]);
+            }
+        }
     }
 
-    public void InitialiseTestTowerSetup()
+    public void InitialiseTestTowerLayout()
     {
         ClearTowers();
         AddTower(0,0, TowerType.SingleDamage);
-        AddTower(5,5, TowerType.SingleDamage);
-        AddTower(5,6, TowerType.SingleDamage);
-        AddTower(5, 7, TowerType.SingleDamage);
-        AddTower(5, 8, TowerType.SingleDamage);
+        AddTower(1,0, TowerType.SingleDamage);
+        AddTower(2,0, TowerType.SingleDamage);
+        AddTower(3,0, TowerType.SingleDamage);
+        AddTower(4,0, TowerType.SingleDamage);
     }
+
+
+    public void CreateRandomTowerLayout()
+    {
+        mapChromosome.Initialise();
+        mapChromosome.Randomise();
+        SetTowers(mapChromosome);
+    }
+
+
+
 }
