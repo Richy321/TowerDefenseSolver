@@ -19,10 +19,10 @@ public class Map : MonoBehaviour, IMap
     public Material altMaterial;
     public Material startMaterial;
     public Material endMaterial;
-    public PathNode startNode;
-    public PathNode endNode;
+    public GridNode startNode;
+    public GridNode endNode;
 
-    public List<PathNode> path = new List<PathNode>();
+    public List<GridNode> path = new List<GridNode>();
     public LineRenderer pathLine;
 
     public List<GameObject> enemies = new List<GameObject>(); 
@@ -127,7 +127,7 @@ public class Map : MonoBehaviour, IMap
 
     public void BuildPathNodeLinks()
     {
-        PathNode pathNode;
+        GridNode pathNode;
         for (int x = 0; x < nodeCountX; x++)
         {
             for (int z = 0; z < nodeCountZ; z++)
@@ -184,8 +184,7 @@ public class Map : MonoBehaviour, IMap
 
     public void FindPath()
     {
-        List<List<PathNode>> listPathNodes = grid.Cast<List<PathNode>>().ToList();
-        PathRequestManager.Instance.pathFinder.FindPathImmediate(startNode, endNode, listPathNodes, out path);
+        PathRequestManager.Instance.pathFinder.FindPathImmediate(startNode, endNode, grid, out path);
         UpdatePathLineRenderer();
     }
 
@@ -205,7 +204,7 @@ public class Map : MonoBehaviour, IMap
         pathLine.SetPosition(path.Count + 3, new Vector3(endNode.gameObject.transform.localPosition.x, lineHeight, endNode.transform.localPosition.z - nodeHeight * 0.5f));
     }
 
-    public static List<Vector3> ConvertToVectorPath(List<PathNode> nodePath)
+    public static List<Vector3> ConvertToVectorPath(List<GridNode> nodePath)
     {
         const float height = 0.2f;
         List<Vector3> path = new List<Vector3>(nodePath.Count + 2);
@@ -238,8 +237,7 @@ public class Map : MonoBehaviour, IMap
 
     public bool GetPath()
     {
-        List<List<PathNode>> listPathNodes = grid.Cast<List<PathNode>>().ToList();
-        return PathRequestManager.Instance.pathFinder.FindPathImmediate(startNode, endNode, listPathNodes, out path);
+        return PathRequestManager.Instance.pathFinder.FindPathImmediate(startNode, endNode, grid, out path);
     }
 
     private void OnEnemyReachesEnd(GameObject obj)

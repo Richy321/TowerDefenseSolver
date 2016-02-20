@@ -55,7 +55,7 @@ public class GridInspector : Editor
 
     }
 
-    private void PathResultCallback(PathNode[] pathNodes, bool b)
+    private void PathResultCallback(GridNode[] pathNodes, bool b)
     {
         Map curMapScript = (Map)target;
         curMapScript.path = pathNodes.ToList();

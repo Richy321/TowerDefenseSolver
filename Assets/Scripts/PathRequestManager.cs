@@ -23,7 +23,7 @@ public class PathRequestManager : MonoBehaviour
         }
     }
 
-    public static void RequestPath(PathNode pathStart, PathNode pathEnd, List<List<PathNode>> pathGrid, Action<PathNode[], bool> callback)
+    public static void RequestPath(GridNode pathStart, GridNode pathEnd, List<List<GridNode>> pathGrid, Action<GridNode[], bool> callback)
     {
         PathRequest newRequest = new PathRequest(pathStart, pathEnd, pathGrid, callback);
 
@@ -41,7 +41,7 @@ public class PathRequestManager : MonoBehaviour
         }
     }
 
-    public void FinishedProcessingPath(PathNode[] path, bool success)
+    public void FinishedProcessingPath(GridNode[] path, bool success)
     {
         currentPathRequest.callback(path, success);
         isProcessing = false;
@@ -50,12 +50,12 @@ public class PathRequestManager : MonoBehaviour
 
     public struct PathRequest
     {
-        public PathNode pathStart;
-        public PathNode pathEnd;
-        public List<List<PathNode>> pathGrid;
-        public Action<PathNode[], bool> callback;
+        public GridNode pathStart;
+        public GridNode pathEnd;
+        public List<List<GridNode>> pathGrid;
+        public Action<GridNode[], bool> callback;
 
-        public PathRequest(PathNode start, PathNode end, List<List<PathNode>> grid, Action<PathNode[], bool> callback)
+        public PathRequest(GridNode start, GridNode end, List<List<GridNode>> grid, Action<GridNode[], bool> callback)
         {
             pathStart = start;
             pathEnd = end;

@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 public class PathFinder : MonoBehaviour
 {
@@ -13,24 +12,24 @@ public class PathFinder : MonoBehaviour
         requestManager = GetComponent<PathRequestManager>();
     }
 
-    public void StartFindPath(PathNode pathStart, PathNode pathEnd, List<List<PathNode>> grid)
+    public void StartFindPath(GridNode pathStart, GridNode pathEnd, List<List<GridNode>> grid)
     {
         StartCoroutine(FindPath(pathStart, pathEnd, grid));
     }
 
-    public bool FindPathImmediate(PathNode start, PathNode end, List<List<PathNode>> grid, out List<PathNode> path)
+    public bool FindPathImmediate(GridNode start, GridNode end, List<List<GridNode>> grid, out List<GridNode> path)
     {
-        path = new List<PathNode>();
+        path = new List<GridNode>();
         bool success = false;
         if (start.walkable && end.walkable)
         {
-            Heap<PathNode> openSet = new Heap<PathNode>(grid.Count * grid[0].Count);
-            HashSet<PathNode> closedSet = new HashSet<PathNode>();
+            Heap<GridNode> openSet = new Heap<GridNode>(grid.Count * grid[0].Count);
+            HashSet<GridNode> closedSet = new HashSet<GridNode>();
             openSet.Add(start);
 
             while (openSet.Count > 0)
             {
-                PathNode currentNode = openSet.RemoveFirst();
+                GridNode currentNode = openSet.RemoveFirst();
                 closedSet.Add(currentNode);
 
                 //path found
@@ -40,7 +39,7 @@ public class PathFinder : MonoBehaviour
                     break;
                 }
 
-                foreach (PathNode neighbour in currentNode.GetNeighbours())
+                foreach (GridNode neighbour in currentNode.GetNeighbours())
                 {
                     if (!neighbour.walkable || closedSet.Contains(neighbour))
                         continue;
@@ -68,9 +67,9 @@ public class PathFinder : MonoBehaviour
         return success;
     }
 
-    public IEnumerator FindPath(PathNode start, PathNode end, List<List<PathNode>> grid)
+    public IEnumerator FindPath(GridNode start, GridNode end, List<List<GridNode>> grid)
     {
-        List<PathNode> path;
+        List<GridNode> path;
         bool success = FindPathImmediate(start, end, grid, out path);
 
         yield return null;
@@ -78,15 +77,15 @@ public class PathFinder : MonoBehaviour
         requestManager.FinishedProcessingPath(path.ToArray(), success);
     }
 
-    int GetDistanceManhatten(PathNode a, PathNode b)
+    int GetDistanceManhatten(GridNode a, GridNode b)
     {
         return Mathf.Abs(a.gridX - b.gridX) * MoveCost + Mathf.Abs(a.gridY - b.gridY) * MoveCost;
     }
 
-    List<PathNode> RetracePath(PathNode start, PathNode end)
+    List<GridNode> RetracePath(GridNode start, GridNode end)
     {
-        Stack<PathNode> path = new Stack<PathNode>();
-        PathNode curNode = end; //trace backwards
+        Stack<GridNode> path = new Stack<GridNode>();
+        GridNode curNode = end; //trace backwards
 
         while (curNode != null)
         {
@@ -97,11 +96,11 @@ public class PathFinder : MonoBehaviour
         return SimplifyPath(path);
     }
 
-    List<PathNode> SimplifyPath(Stack<PathNode> pathStack)
+    List<GridNode> SimplifyPath(Stack<GridNode> pathStack)
     {
-        List<PathNode> simplifiedPath = new List<PathNode>();
+        List<GridNode> simplifiedPath = new List<GridNode>();
         Vector2 oldDirection = Vector2.zero;
-        PathNode curNode;
+        GridNode curNode;
 
         while (pathStack.Count > 0)
         {
@@ -110,7 +109,7 @@ public class PathFinder : MonoBehaviour
 
             if (pathStack.Count != 0) //last
             {
-                PathNode nextNode = pathStack.Peek();
+                GridNode nextNode = pathStack.Peek();
                 curDirection = new Vector2(nextNode.gridX - curNode.gridX, nextNode.gridY - curNode.gridY);
             }
 
