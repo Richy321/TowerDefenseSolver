@@ -119,8 +119,8 @@ public class Map : MonoBehaviour, IMap
         }
 
 
-        startNode = grid[nodeCountX/2][nodeCountZ - 1];
-        endNode = grid[nodeCountX/2][0];
+        startNode = grid[nodeCountZ - 1][nodeCountX / 2];
+        endNode = grid[0][nodeCountX / 2];
 
         BuildPathNodeLinks();
     }
@@ -128,22 +128,22 @@ public class Map : MonoBehaviour, IMap
     public void BuildPathNodeLinks()
     {
         GridNode pathNode;
-        for (int x = 0; x < nodeCountX; x++)
+        for (int z = 0; z < nodeCountZ; z++)
         {
-            for (int z = 0; z < nodeCountZ; z++)
+            for (int x = 0; x < nodeCountX; x++)
             {
-                pathNode = grid[x][z];
+                pathNode = grid[z][x];
                 pathNode.gridX = x;
                 pathNode.gridY = z;
                 pathNode.walkable = true;
                 if (z < nodeCountZ - 1)
-                    pathNode.north = grid[x][z + 1];
+                    pathNode.north = grid[z + 1][x];
                 if (z > 0)
-                    pathNode.south = grid[x][z - 1];
+                    pathNode.south = grid[z - 1][x];
                 if (x < nodeCountX - 1)
-                    pathNode.east = grid[x + 1][z];
+                    pathNode.east = grid[z][x + 1];
                 if (x > 0)
-                    pathNode.west = grid[x - 1][z];
+                    pathNode.west = grid[z][x - 1];
             }
         }
     }
@@ -152,9 +152,9 @@ public class Map : MonoBehaviour, IMap
     {
         if (grid != null && grid.Count >0 && grid[0].Count > 0)
         {
-            for (int i = 0; i < nodeCountX; i++)
+            for (int i = 0; i < grid[0].Count; i++)
             {
-                for (int j = 0; j < nodeCountZ; j++)
+                for (int j = 0; j < grid.Count; j++)
                 {
                     if (grid[i][j])
                         DestroyImmediate(grid[i][j].gameObject);
@@ -186,6 +186,47 @@ public class Map : MonoBehaviour, IMap
     {
         PathRequestManager.Instance.pathFinder.FindPathImmediate(startNode, endNode, grid, out path);
         UpdatePathLineRenderer();
+    }
+
+    public void GenerateFixedPath()
+    {
+        path.Clear();
+        int xCoord = startNode.gridX;
+        int zCoord = startNode.gridY;
+
+        try
+        {
+            while (true)
+            {
+                for (; xCoord <= nodeCountX - 2; xCoord++)
+                {
+                    path.Add(grid[zCoord][xCoord]);
+                    if (zCoord == endNode.gridY && xCoord == endNode.gridX)
+                        return;
+                }
+                xCoord--;
+
+                path.Add(grid[--zCoord][xCoord]);
+                if (zCoord > 0)
+                    path.Add(grid[--zCoord][xCoord--]);
+
+                for (; xCoord >= 1; xCoord--)
+                {
+                    path.Add(grid[zCoord][xCoord]);
+                    if (zCoord == endNode.gridY && xCoord == endNode.gridX)
+                        return;
+                }
+                xCoord++;
+
+                path.Add(grid[--zCoord][xCoord]);
+                if (zCoord > 0)
+                    path.Add(grid[--zCoord][xCoord]);
+            }
+        }
+        finally 
+        {
+            UpdatePathLineRenderer();
+        }
     }
 
     public void UpdatePathLineRenderer()
@@ -320,14 +361,11 @@ public class Map : MonoBehaviour, IMap
         AddTower(4,0, TowerType.SingleDamage);
     }
 
-
     public void CreateRandomTowerLayout()
     {
         mapChromosome.Initialise();
         mapChromosome.Randomise();
         SetTowers(mapChromosome);
     }
-
-
 
 }

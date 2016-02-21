@@ -31,6 +31,12 @@ public class GridInspector : Editor
             EditorUtility.SetDirty(target);
         }
 
+        if (GUILayout.Button("Fixed Path"))
+        {
+            curMapScript.GenerateFixedPath();
+            SceneView.RepaintAll();
+            EditorUtility.SetDirty(target);
+        }
 
         if (GUILayout.Button("Test Tower Layout"))
         {
