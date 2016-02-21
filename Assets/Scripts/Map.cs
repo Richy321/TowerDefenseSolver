@@ -223,10 +223,16 @@ public class Map : MonoBehaviour, IMap
                     path.Add(grid[--zCoord][xCoord]);
             }
         }
-        finally 
+        finally
         {
+            SetPathUnwalkable();
             UpdatePathLineRenderer();
         }
+    }
+
+    public void SetPathUnwalkable()
+    {
+        path.ForEach(x => x.walkable = false);
     }
 
     public void UpdatePathLineRenderer()

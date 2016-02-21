@@ -28,7 +28,10 @@ namespace Assets.Scripts
         {
             for (int z = 0; z < map.nodeCountZ; z++)
                 for (int x = 0; x < map.nodeCountX; x++)
-                    chromosome[z][x] = GetRandomTowerType();
+                {
+                    if(map.grid[z][x].walkable)
+                        chromosome[z][x] = GetRandomTowerType();
+                }
         }
 
         TowerType GetRandomTowerType()
