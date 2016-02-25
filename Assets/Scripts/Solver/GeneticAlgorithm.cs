@@ -8,7 +8,6 @@ namespace Assets.Scripts
 {
     public interface IChromosome<T>
     {
-        void Randomise();
         int Length { get; }
         int Fitness { get; }
         void Crossover(int pos, T other);
@@ -16,72 +15,52 @@ namespace Assets.Scripts
         T Clone();
     }
 
-    class GeneticAlgorithm
+    public enum SelectionAlgorithm
     {
-        
+        RouletteWheel,
+        StocasticUniversalSampling,
+        TournamentSelection,
+        TruncationSelection
+    }
 
-
+    public class GeneticAlgorithm : GeneticAlgorithm<BuildDecisionsChromosome>
+    {
     }
 
 
-    class GeneticAlgorithm<T> where T : IChromosome<T>, new()
+    public class GeneticAlgorithm<T> : MonoBehaviour where T : IChromosome<T>, new()
     {
-        public static int populationSize = 25;
-
-        public float crossoverRate = 0.9f;
-        public float mutationRate = 0.1f;
-        public bool elitism = false;
-        public int totalFitness;
-        public int generationNo;
-        public List<T> population = new List<T>(populationSize);
-        public SelectionAlgorithm selectionAlgorithm = SelectionAlgorithm.RouletteWheel;
-        public Action<List<T>>  onRequestGenerateFitness;
-
-
         /// <summary>
         ///Roulette-wheel selection - normalised decending, random value (0-1), first to accum to that value
         ///Stocastic Universal sampling - multiple equally spaced out pointers
         ///Tournament selection - best individual of a randomly chosen subset
         ///Truncation selection - best % of of the population is kept.
         /// </summary>
-        public enum SelectionAlgorithm
+        public float crossoverRate = 0.9f;
+        public float mutationRate = 0.1f;
+        public bool elitism = false;
+        public int totalFitness;
+        public int generationNo;
+        public List<T> population;
+        public SelectionAlgorithm selectionAlgorithm = SelectionAlgorithm.RouletteWheel;
+        public Action<List<T>>  onRequestGenerateFitness;
+
+        public void SetInitialPopulation(List<T> initialPopulation )
         {
-            RouletteWheel,
-            StocasticUniversalSampling,
-            TournamentSelection,
-            TruncationSelection
-        }
-
-        public void InitialisePopulation()
-        {
-            for (int i = 0; i < populationSize; i++)
-            {
-                population.Add((new T()));
-                population.Last().Randomise();
-            }
-        }
-
-        void GeneratePopulationFitness()
-        {
-            if (onRequestGenerateFitness == null)
-                throw new UnityException("onRequestGenerateFitness not assigned");
-
-            onRequestGenerateFitness(population); //fill in fitness values (by ref)
-
-            //sort fitness high->low
-            population.Sort((a,b) => b.Fitness.CompareTo(a.Fitness));
+            population = initialPopulation;
         }
 
         public void EvolvePopulation()
         {
-            GeneratePopulationFitness();
+            //sort fitness high->low
+            population.Sort((a, b) => b.Fitness.CompareTo(a.Fitness));
 
             totalFitness = 0;
             population.ForEach(v => totalFitness += v.Fitness); //get total fitness
 
             List<T> newPopulation = new List<T>();
             //Selection Process
-            while (newPopulation.Count < populationSize)
+            while (newPopulation.Count < population.Count)
             {
                 T offspringA;
                 T offspringB;
@@ -129,7 +108,7 @@ namespace Assets.Scripts
 
             float runningNormalisedFitness = 0;
 
-            for (int i = 0; i < populationSize; i++)
+            for (int i = 0; i < population.Count; i++)
             {
                 runningNormalisedFitness += (float) population[i].Fitness / totalFitness;
 
@@ -159,7 +138,7 @@ namespace Assets.Scripts
             throw new NotImplementedException();
         }
         
-        public virtual void Crossover(T a, T b)
+        public void Crossover(T a, T b)
         {
             if (Random.value <= crossoverRate)
             {
@@ -168,7 +147,7 @@ namespace Assets.Scripts
             }
         }
 
-        public virtual void Mutate(T chromosome)
+        public void Mutate(T chromosome)
         {
             for (int i = 0; i < chromosome.Length; i++)
             {

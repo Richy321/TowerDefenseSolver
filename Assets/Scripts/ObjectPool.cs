@@ -31,7 +31,6 @@ public class ObjectPool : MonoBehaviour
 
     public Dictionary<TowerType, GameObject> TowerPrefabs = new Dictionary<TowerType, GameObject>(); 
 
-
     public int CheapestTowerCost
     {
         get
@@ -50,14 +49,28 @@ public class ObjectPool : MonoBehaviour
     void Awake ()
     {
         TowerPools.Clear();
+
+        foreach (TowerType towerType in Enum.GetValues(typeof (TowerType)))
+        {
+            if (towerType == TowerType.None)
+                continue;
+            TowerPrefabs.Add(towerType, null);
+        }
+        //Todo custom dictionary inspector to assign these directly
+        TowerPrefabs[TowerType.SingleDamage] = singleTowerPrefab;
+        TowerPrefabs[TowerType.Slow] = slowTowerPrefab;
+        TowerPrefabs[TowerType.SplashDamage] = splashTowerPrefab;
+
         foreach (TowerType towerType in Enum.GetValues(typeof (TowerType)))
         {
             if (towerType == TowerType.None)
                 continue;
             TowerPools.Add(towerType, new Pool());
+
             for (int i = 0; i < towerInitialiseCount; i++)
-                TowerPools[towerType].inactive.Add(CreateTower(towerType));
+                TowerPools[towerType].inactive.Add(CreateTower(towerType));            
         }
+
 
         foreach (EnemyType enemyType in Enum.GetValues(typeof (EnemyType)))
         {
@@ -69,21 +82,10 @@ public class ObjectPool : MonoBehaviour
 
     GameObject CreateTower(TowerType type)
     {
-        GameObject tower;
-        switch (type)
-        {
-            case TowerType.SingleDamage:
-                tower = Instantiate(singleTowerPrefab);
-                break;
-            case TowerType.SplashDamage:
-                tower = Instantiate(splashTowerPrefab);
-                break;
-            case TowerType.Slow:
-                tower = Instantiate(slowTowerPrefab);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException("type", type, null);
-        }
+        if (type == TowerType.None)
+            throw new UnityException("Create Tower was passed TowerType.None...");
+
+        GameObject tower = Instantiate(TowerPrefabs[type]);
         tower.transform.parent = TowerContainer.transform;
         tower.SetActive(false);
         return tower;

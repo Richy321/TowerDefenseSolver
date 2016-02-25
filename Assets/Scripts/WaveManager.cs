@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,9 @@ public class WaveManager : MonoBehaviour
     public List<Map> maps = new List<Map>();
     public List<Wave> waves = new List<Wave>();
 
-
+    public Action<int> OnWaveFinished;
+    public Action<int> OnWaveStart; 
+     
     private static WaveManager instance;
 
     public static WaveManager Instance
@@ -56,17 +59,28 @@ public class WaveManager : MonoBehaviour
         StartCoroutine("DoWave", waves[waveIndex]);
     }
 
+    public void SpawnNextWave()
+    {
+        if (waveSpawnIndex != waves.Count - 1)
+            waveSpawnIndex++;
+        SpawnWave(waveSpawnIndex);
+    }
+
+
     private IEnumerator DoWave(Wave wave)
     {
-        foreach (Map map in maps)
+        if (OnWaveStart != null) OnWaveStart(wave.count);
+        for (waveSpawnIndex = 0; waveSpawnIndex < wave.count; waveSpawnIndex++)
         {
-            for (waveSpawnIndex = 0; waveSpawnIndex < wave.count; waveSpawnIndex++)
+            foreach (Map map in maps)
             {
                 map.SpawnEnemy(wave.type);
-                yield return new WaitForSeconds(wave.spawnInterval);
             }
+            yield return new WaitForSeconds(wave.spawnInterval);
         }
+
         isInWave = false;
+        if(OnWaveFinished != null) OnWaveFinished(waveIndex);
         waveIndex++;
         yield return null;
     }
@@ -82,12 +96,22 @@ public class WaveManager : MonoBehaviour
         return test;
     }
 
-
     public int MaxEnemyCount
     {
         get
         {
             return waves.Sum(wave => wave.count);
         }
+    }
+
+
+    public void StartWaves()
+    {
+        isActive = true;
+    }
+
+    public void StopWaves()
+    {
+        isActive = false;
     }
 }

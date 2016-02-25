@@ -79,7 +79,7 @@ public class PathFinder : MonoBehaviour
 
     int GetDistanceManhatten(GridNode a, GridNode b)
     {
-        return Mathf.Abs(a.gridX - b.gridX) * MoveCost + Mathf.Abs(a.gridY - b.gridY) * MoveCost;
+        return Mathf.Abs(a.gridX - b.gridX) * MoveCost + Mathf.Abs(a.gridZ - b.gridZ) * MoveCost;
     }
 
     List<GridNode> RetracePath(GridNode start, GridNode end)
@@ -110,7 +110,7 @@ public class PathFinder : MonoBehaviour
             if (pathStack.Count != 0) //last
             {
                 GridNode nextNode = pathStack.Peek();
-                curDirection = new Vector2(nextNode.gridX - curNode.gridX, nextNode.gridY - curNode.gridY);
+                curDirection = new Vector2(nextNode.gridX - curNode.gridX, nextNode.gridZ - curNode.gridZ);
             }
 
             if (curDirection != oldDirection)

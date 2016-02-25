@@ -11,9 +11,9 @@ namespace Assets.Editor
             DrawDefaultInspector();
             SceneController curScript = (SceneController) target;
 
-            if (GUILayout.Button("Start Simulation"))
+            if (GUILayout.Button("Start GA"))
             {
-                curScript.StartSimulation();
+                curScript.StartGA();
             }
         }
     }

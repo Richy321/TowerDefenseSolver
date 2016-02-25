@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Policy;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -30,16 +31,9 @@ namespace Assets.Scripts
                 for (int x = 0; x < map.nodeCountX; x++)
                 {
                     if(map.grid[z][x].walkable)
-                        chromosome[z][x] = GetRandomTowerType();
+                        chromosome[z][x] = Map.GetRandomTowerType();
                 }
         }
-
-        public static TowerType GetRandomTowerType()
-        {
-            return (TowerType)Random.Range(0, Enum.GetValues(typeof(TowerType)).Length);
-        }
-
-
 
         public int Length { get; set; }
 
@@ -71,7 +65,7 @@ namespace Assets.Scripts
             int x;
             int z;
             GetXZCoords(geneIndex, out x, out z);
-            chromosome[z][x] = GetRandomTowerType();
+            chromosome[z][x] = Map.GetRandomTowerType();
         }
 
         public MapChromosome Clone()

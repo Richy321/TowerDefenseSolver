@@ -18,7 +18,7 @@ public class GridNode : MonoBehaviour, IHeapItem<GridNode>
     public int hCost;
 
     public int gridX;
-    public int gridY;
+    public int gridZ;
 
     public int heapIndex;
     public TowerType towerType = TowerType.None;

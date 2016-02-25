@@ -27,38 +27,27 @@ public class GridInspector : Editor
         if (GUILayout.Button("Find Path"))
         {
             curMapScript.FindPath();
-            SceneView.RepaintAll();
-            EditorUtility.SetDirty(target);
         }
 
         if (GUILayout.Button("Fixed Path"))
         {
             curMapScript.GenerateFixedPath();
-            SceneView.RepaintAll();
-            EditorUtility.SetDirty(target);
         }
 
         if (GUILayout.Button("Test Tower Layout"))
         {
             curMapScript.CreateRandomTowerLayout();
-            SceneView.RepaintAll();
-            EditorUtility.SetDirty(target);
         }
 
         if (GUILayout.Button("Randomise Towers"))
         {
             curMapScript.CreateRandomTowerLayout();
-            SceneView.RepaintAll();
-            EditorUtility.SetDirty(target);
         }
 
         if (GUILayout.Button("Clear Towers"))
         {
             curMapScript.ClearTowers();
-            SceneView.RepaintAll();
-            EditorUtility.SetDirty(target);
         }
-
     }
 
     private void PathResultCallback(GridNode[] pathNodes, bool b)

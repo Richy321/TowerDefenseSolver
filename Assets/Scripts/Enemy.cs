@@ -16,6 +16,7 @@ public class Enemy : MonoBehaviour
     public Action<GameObject> onDied;
 
     public int resourceReward = 2;
+    public int lifeDeduction = 1;
 
     // Use this for initialization
     void Start ()

@@ -1,7 +1,9 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts;
+using Random = UnityEngine.Random;
 
 public class Map : MonoBehaviour, IMap
 {
@@ -14,7 +16,7 @@ public class Map : MonoBehaviour, IMap
     public GameObject towerContainer;
     public GameObject geneContainer;
 
-    public List<MapChromosome> mapChromosomes;
+    public BuildDecisionsChromosome buildDecisionsChromosome;
 
     public List<List<GridNode>> grid;
     public Material altMaterial;
@@ -32,27 +34,38 @@ public class Map : MonoBehaviour, IMap
     private static float nodeWidth;
     private static float nodeHeight;
 
-    private int enemyReachesEndCount = 0;
-
     public const int StartingResources = 15;
     public int resources = StartingResources;
 
-    public bool isSimulating = false;
+    public const int StartingLives = 10;
+    public int lives = StartingLives;
+
+    private int resourcesCollected;
+
+    public int currentWaveEnemiesLeft;
+
+    public enum MapState
+    {
+        Idle,
+        Running,
+        CompletedWave,
+        FinishedGame
+    }
+    public MapState state;
 
     // Use this for initialization
     void Start ()
     {
-        //InitialiseTestTowerLayout();
-        //FindPath();
     }
 
     void Awake()
     {
-        //if (!mapChromosome) mapChromosome = GetComponent<MapChromosome>();
+        if (!buildDecisionsChromosome) buildDecisionsChromosome = GetComponent<BuildDecisionsChromosome>();
         if (!pathLine) pathLine = GetComponent<LineRenderer>();
-        BuildGrid();
+        if (!objectPool) objectPool = FindObjectOfType<ObjectPool>();
 
-        //mapChromosome.Initialise();
+        BuildGrid();
+        state = MapState.Idle;
     }
 	
 	// Update is called once per frame
@@ -110,7 +123,7 @@ public class Map : MonoBehaviour, IMap
         {
             for (int x = 0; x < nodeCountX; x++)
             {
-                Vector3 pos = new Vector3(x * nodeWidth, 0.0f, z * nodeHeight);
+                Vector3 pos = transform.position + new Vector3(x * nodeWidth, 0.0f, z * nodeHeight);
                 GameObject obj = Instantiate(nodePrefab, pos, nodePrefab.transform.localRotation) as GameObject;
                 obj.name = "Grid " + x + "," + z;
                 if (isAltMaterial)
@@ -144,7 +157,7 @@ public class Map : MonoBehaviour, IMap
             {
                 pathNode = grid[z][x];
                 pathNode.gridX = x;
-                pathNode.gridY = z;
+                pathNode.gridZ = z;
                 pathNode.walkable = true;
                 if (z < nodeCountZ - 1)
                     pathNode.north = grid[z + 1][x];
@@ -191,23 +204,6 @@ public class Map : MonoBehaviour, IMap
 
         pathLine.SetVertexCount(0);      
     }
-
-    public GridNode GetRandomNode()
-    {
-        List<GridNode> availableGridNodes = new List<GridNode>();
-
-        foreach (List<GridNode> t in grid)
-        {
-            for (int x = 0; x < grid[0].Count; x++)
-            {
-                if(t[x].towerType == TowerType.None && t[x].placeable)
-                    availableGridNodes.Add(t[x]);
-            }
-        }
-
-        return availableGridNodes[Random.Range(0, availableGridNodes.Count)];
-    }
-
     #endregion
 
     #region Pathing
@@ -222,7 +218,7 @@ public class Map : MonoBehaviour, IMap
     {
         path.Clear();
         int xCoord = startNode.gridX;
-        int zCoord = startNode.gridY;
+        int zCoord = startNode.gridZ;
 
         try
         {
@@ -231,7 +227,7 @@ public class Map : MonoBehaviour, IMap
                 for (; xCoord <= nodeCountX - 2; xCoord++)
                 {
                     path.Add(grid[zCoord][xCoord]);
-                    if (zCoord == endNode.gridY && xCoord == endNode.gridX)
+                    if (zCoord == endNode.gridZ && xCoord == endNode.gridX)
                         return;
                 }
                 xCoord--;
@@ -243,7 +239,7 @@ public class Map : MonoBehaviour, IMap
                 for (; xCoord >= 1; xCoord--)
                 {
                     path.Add(grid[zCoord][xCoord]);
-                    if (zCoord == endNode.gridY && xCoord == endNode.gridX)
+                    if (zCoord == endNode.gridZ && xCoord == endNode.gridX)
                         return;
                 }
                 xCoord++;
@@ -261,30 +257,30 @@ public class Map : MonoBehaviour, IMap
     }
     public void UpdatePathLineRenderer()
     {
-        const float lineHeight = 0.2f;
+        const float lineOffset = 0.2f;
         pathLine.SetVertexCount(path.Count + 4);
-        pathLine.SetPosition(0, new Vector3(startNode.gameObject.transform.localPosition.x, lineHeight, startNode.transform.localPosition.z + nodeHeight *0.5f));
-        pathLine.SetPosition(1, new Vector3(startNode.gameObject.transform.localPosition.x, lineHeight, startNode.transform.localPosition.z));
+        pathLine.SetPosition(0, new Vector3(startNode.gameObject.transform.position.x, startNode.gameObject.transform.position.y + lineOffset, startNode.transform.position.z + nodeHeight *0.5f));
+        pathLine.SetPosition(1, new Vector3(startNode.gameObject.transform.position.x, startNode.gameObject.transform.position.y + lineOffset, startNode.transform.position.z));
 
         for (int i=0; i < path.Count; i++)
         {
-            pathLine.SetPosition(i+2, new Vector3(path[i].gameObject.transform.localPosition.x, lineHeight, path[i].transform.localPosition.z));
+            pathLine.SetPosition(i+2, new Vector3(path[i].gameObject.transform.position.x, path[i].gameObject.transform.position.y + lineOffset, path[i].transform.position.z));
         }
 
-        pathLine.SetPosition(path.Count + 2, new Vector3(endNode.gameObject.transform.localPosition.x, lineHeight, endNode.transform.localPosition.z));
-        pathLine.SetPosition(path.Count + 3, new Vector3(endNode.gameObject.transform.localPosition.x, lineHeight, endNode.transform.localPosition.z - nodeHeight * 0.5f));
+        pathLine.SetPosition(path.Count + 2, new Vector3(endNode.gameObject.transform.position.x, endNode.gameObject.transform.position.y + lineOffset, endNode.transform.position.z));
+        pathLine.SetPosition(path.Count + 3, new Vector3(endNode.gameObject.transform.position.x, endNode.gameObject.transform.position.y + lineOffset, endNode.transform.position.z - nodeHeight * 0.5f));
     }
 
     public static List<Vector3> ConvertToVectorPath(List<GridNode> nodePath, float height)
     {
         List<Vector3> path = new List<Vector3>(nodePath.Count + 2);
 
-        path.Add(new Vector3(nodePath[0].gameObject.transform.localPosition.x, height, nodePath[0].transform.localPosition.z + nodeHeight * 0.5f));
+        path.Add(new Vector3(nodePath[0].gameObject.transform.position.x, height, nodePath[0].transform.position.z + nodeHeight * 0.5f));
 
         for (int i = 0; i < nodePath.Count; i++)
-            path.Add(new Vector3(nodePath[i].gameObject.transform.localPosition.x, height, nodePath[i].transform.localPosition.z));
+            path.Add(new Vector3(nodePath[i].gameObject.transform.position.x, height, nodePath[i].transform.position.z));
 
-        path.Add(new Vector3(nodePath.Last().gameObject.transform.localPosition.x, height, nodePath.Last().transform.localPosition.z - nodeHeight * 0.5f));
+        path.Add(new Vector3(nodePath.Last().gameObject.transform.position.x, height, nodePath.Last().transform.position.z - nodeHeight * 0.5f));
 
         return path;
     }
@@ -298,29 +294,41 @@ public class Map : MonoBehaviour, IMap
     #region Enemy
     public void SpawnEnemy(EnemyType type)
     {
-        GameObject enemy = objectPool.GetEnemy(type);
-        enemy.transform.parent = enemyContainer.transform;
+        if (state == MapState.Running)
+        {
+            GameObject enemy = objectPool.GetEnemy(type);
+            enemy.transform.parent = enemyContainer.transform;
 
-        Enemy enemyScript = enemy.GetComponent<Enemy>();
-        enemyScript.path = ConvertToVectorPath(path, enemy.transform.position.y);//keep height
+            Enemy enemyScript = enemy.GetComponent<Enemy>();
+            enemyScript.path = ConvertToVectorPath(path, enemy.transform.position.y); //keep height
 
-        enemy.transform.position = enemyScript.path[0];
+            enemy.transform.position = enemyScript.path[0];
 
-        enemies.Add(enemy);
-        enemyScript.onReachedEnd += OnEnemyReachesEnd;
-        enemyScript.onDied += OnEnemyDied;
+            enemies.Add(enemy);
+            enemyScript.onReachedEnd += OnEnemyReachesEnd;
+            enemyScript.onDied += OnEnemyDied;
 
-        enemyScript.Go();
+            enemyScript.Go();
+        }
     }
 
     private void OnEnemyReachesEnd(GameObject obj)
     {
-        obj.GetComponent<Enemy>().onReachedEnd -= OnEnemyReachesEnd;
+        Enemy enemyScript = obj.GetComponent<Enemy>();
+        enemyScript.onReachedEnd -= OnEnemyReachesEnd;
         enemies.Remove(obj);
         obj.transform.parent = null;
         objectPool.ReleaseEnemy(obj);
-        enemyReachesEndCount++;
-        Debug.Log("Enemy Reached End");
+
+        currentWaveEnemiesLeft--;
+        lives -= enemyScript.lifeDeduction;
+        lives = Math.Max(0, lives);
+
+        if (lives < 1)
+            MapFinish();
+
+        if (currentWaveEnemiesLeft <= 0)
+            state = MapState.CompletedWave;
     }
 
     private void OnEnemyDied(GameObject obj)
@@ -328,18 +336,32 @@ public class Map : MonoBehaviour, IMap
         Enemy enemy = obj.GetComponent<Enemy>();
         enemy.onDied -= OnEnemyDied;
         resources += enemy.resourceReward;
+        resourcesCollected += enemy.resourceReward;
+        currentWaveEnemiesLeft--;
 
         enemies.Remove(obj);
         obj.transform.parent = null;
         objectPool.ReleaseEnemy(obj);
         Debug.Log("Enemy Died");
+
+        if (currentWaveEnemiesLeft <= 0)
+            state = MapState.CompletedWave;
     }
     #endregion
 
     #region Towers
-    public void AddTower(int rowIndex, int colIndex, TowerType type)
+    public void AddTower(int rowIndex, int colIndex, TowerType type, bool checkResources = false)
     {
-        if (grid[rowIndex][colIndex].placeable && type != TowerType.None)
+        bool passedResourceCheck = true;
+        if (checkResources)
+        {
+            if (objectPool.TowerPrefabs[type].GetComponent<BaseTower>().resourceCost > resources)
+            {
+                passedResourceCheck = false;
+            }
+        }
+
+        if (passedResourceCheck && grid[rowIndex][colIndex].placeable && type != TowerType.None)
         {
             GameObject tower = objectPool.GetTower(type);
             towers.Add(tower);
@@ -349,6 +371,9 @@ public class Map : MonoBehaviour, IMap
             grid[rowIndex][colIndex].placeable = false;
             grid[rowIndex][colIndex].towerType = type;
             tower.SetActive(true);
+
+            if(checkResources)
+                resources -= objectPool.TowerPrefabs[type].GetComponent<BaseTower>().resourceCost;
         }
     }
 
@@ -372,8 +397,11 @@ public class Map : MonoBehaviour, IMap
         {
             foreach (var pathNode in pathNodes)
             {
-                pathNode.walkable = true;
-                pathNode.towerType = TowerType.None;
+                if (!path.Contains(pathNode))
+                {
+                    pathNode.placeable = true;
+                    pathNode.towerType = TowerType.None;
+                }
             }
         }
     }
@@ -395,10 +423,10 @@ public class Map : MonoBehaviour, IMap
 
     public void CreateRandomTowerLayout()
     {
-        mapChromosomes.Add(new MapChromosome());
-        mapChromosomes[0].Initialise();
-        mapChromosomes[0].Randomise();
-        SetTowers(mapChromosomes[0]);
+        //mapChromosomes.Add(new MapChromosome());
+        //mapChromosomes[0].Initialise();
+        //mapChromosomes[0].Randomise();
+        //SetTowers(mapChromosomes[0]);
     }
 
     #endregion
@@ -418,7 +446,7 @@ public class Map : MonoBehaviour, IMap
 
     public void SaveLayout()
     {
-        MapChromosome chromosome = geneContainer.AddComponent<MapChromosome>();
+        /*MapChromosome chromosome = geneContainer.AddComponent<MapChromosome>();
         chromosome.map = this;
         chromosome.Initialise();
 
@@ -429,50 +457,103 @@ public class Map : MonoBehaviour, IMap
                 chromosome.chromosome[z][x] = grid[z][x].towerType;
             }
         }
-        mapChromosomes.Add(chromosome);
+        mapChromosomes.Add(chromosome);*/
     }
     #endregion
 
-
-    public void Reset()
+    public void MapFinish()
     {
-        resources = StartingResources;
-        enemyReachesEndCount = 0;
+        buildDecisionsChromosome.Fitness = resourcesCollected + (lives*5);
+        state = MapState.FinishedGame;
     }
 
-    public void SetChromosomeFitness(int tickIndex)
+    public void MapStart()
     {
-        mapChromosomes[tickIndex].Fitness = WaveManager.Instance.MaxEnemyCount - enemyReachesEndCount;
+        state = MapState.Running;   
     }
 
+    #region Genetic Algorithm functions
     public void SimulateDecisionTick(int tickNumber)
     {
-        //SetTowers(mapChromosomes[tickNumber]);
+        if (buildDecisionsChromosome.buildDecisionGenes.Count > tickNumber)
+        {
+            TowerType towerType = buildDecisionsChromosome.buildDecisionGenes[tickNumber].towerType;
+            int gridX = buildDecisionsChromosome.buildDecisionGenes[tickNumber].gridXCoord;
+            int gridZ = buildDecisionsChromosome.buildDecisionGenes[tickNumber].gridZCoord;
+
+            AddTower(gridZ, gridX, towerType, true);
+        }
     }
 
     public void GenerateDecisionTick(int tickNumber)
     {
-        //generate valid 
-        int cheapestTower = objectPool.CheapestTowerCost;
-        int totalBuildableTowers = resources / cheapestTower;
-
-        int towersToBuild = Random.Range(0, totalBuildableTowers+1);
-
-        while (towersToBuild > 0)
+        if (Random.value > 0.5 )
         {
             //pick tower at random
-            TowerType randomTowerType = MapChromosome.GetRandomTowerType();
+            TowerType randomTowerType = GetRandomAffordableTowerType();
+            if (randomTowerType == TowerType.None)
+                return;
 
             //pick location at random
-            GridNode randomNode = GetRandomNode();
+            GridNode randomNode = GetRandomPlaceableNode();
 
-            AddTower(randomNode.gridY, randomNode.gridX, randomTowerType);
-            resources -= objectPool.TowerPrefabs[randomTowerType].GetComponent<BaseTower>().resourceCost;
+            AddTower(randomNode.gridZ, randomNode.gridX, randomTowerType, true);
 
-            if (resources < cheapestTower)
-                towersToBuild = 0;
+            buildDecisionsChromosome.buildDecisionGenes.Add(
+                new BuildDecision { towerType = randomTowerType,
+                gridXCoord = randomNode.gridX,
+                gridZCoord = randomNode.gridZ
+            });
+        }
+        else
+        {
+            buildDecisionsChromosome.buildDecisionGenes.Add(new BuildDecision { towerType = TowerType.None});
+        }
+    }
+
+    public void Reset()
+    {
+        resources = StartingResources;
+        lives = StartingLives;
+        ClearTowers();
+        for (int i = enemies.Count-1; i > 0; i--)
+            enemies[i].GetComponent<Enemy>().onDied(enemies[i]);
+    }
+    #endregion
+
+    #region Utils
+    public static TowerType GetRandomTowerType()
+    {
+        return (TowerType)Random.Range(0, Enum.GetValues(typeof(TowerType)).Length);
+    }
+
+    public TowerType GetRandomAffordableTowerType()
+    {
+        List<TowerType> affordableTypes = (from keyValuePair in objectPool.TowerPrefabs
+                                           let towerScript = keyValuePair.Value.GetComponent<BaseTower>()
+                                           where towerScript.resourceCost <= resources
+                                           select keyValuePair.Key).ToList();
+
+        if(affordableTypes.Count ==0)
+            return TowerType.None;
+
+        return affordableTypes[Random.Range(0, affordableTypes.Count)];
+    }
+
+    public GridNode GetRandomPlaceableNode()
+    {
+        List<GridNode> availableGridNodes = new List<GridNode>();
+
+        foreach (List<GridNode> t in grid)
+        {
+            for (int x = 0; x < grid[0].Count; x++)
+            {
+                if (t[x].towerType == TowerType.None && t[x].placeable)
+                    availableGridNodes.Add(t[x]);
+            }
         }
 
-        SaveLayout();
+        return availableGridNodes[Random.Range(0, availableGridNodes.Count)];
     }
+    #endregion
 }
