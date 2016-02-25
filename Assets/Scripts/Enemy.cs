@@ -13,7 +13,9 @@ public class Enemy : MonoBehaviour
     public EnemyTargettingType targettingType;
 
     public Action<GameObject> onReachedEnd;
-    public Action<GameObject> onDied; 
+    public Action<GameObject> onDied;
+
+    public int resourceReward = 2;
 
     // Use this for initialization
     void Start ()

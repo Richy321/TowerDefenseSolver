@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts;
-using System;
 
 public class Map : MonoBehaviour, IMap
 {
@@ -13,7 +12,9 @@ public class Map : MonoBehaviour, IMap
     public ObjectPool objectPool;
     public GameObject enemyContainer;
     public GameObject towerContainer;
-    public MapChromosome mapChromosome;
+    public GameObject geneContainer;
+
+    public List<MapChromosome> mapChromosomes;
 
     public List<List<GridNode>> grid;
     public Material altMaterial;
@@ -33,6 +34,11 @@ public class Map : MonoBehaviour, IMap
 
     private int enemyReachesEndCount = 0;
 
+    public const int StartingResources = 15;
+    public int resources = StartingResources;
+
+    public bool isSimulating = false;
+
     // Use this for initialization
     void Start ()
     {
@@ -42,11 +48,11 @@ public class Map : MonoBehaviour, IMap
 
     void Awake()
     {
-        if (!mapChromosome) mapChromosome = GetComponent<MapChromosome>();
+        //if (!mapChromosome) mapChromosome = GetComponent<MapChromosome>();
         if (!pathLine) pathLine = GetComponent<LineRenderer>();
         BuildGrid();
 
-        mapChromosome.Initialise();
+        //mapChromosome.Initialise();
     }
 	
 	// Update is called once per frame
@@ -68,10 +74,12 @@ public class Map : MonoBehaviour, IMap
                     {
                         Gizmos.color = Color.grey;
 
-                        if (path.Contains(pathNode))
-                            Gizmos.color = Color.yellow;
+                        if (!pathNode.placeable) 
+                            Gizmos.color = Color.blue;
                         if (!pathNode.walkable)
                             Gizmos.color = Color.magenta;
+                        if (path.Contains(pathNode))
+                            Gizmos.color = Color.yellow;
                         if (pathNode == startNode)
                             Gizmos.color = Color.green;
                         if (pathNode == endNode)
@@ -83,6 +91,7 @@ public class Map : MonoBehaviour, IMap
         }
     }
 
+    #region Grid
     public void BuildGrid()
     {
         ClearGrid();
@@ -123,6 +132,7 @@ public class Map : MonoBehaviour, IMap
         endNode = grid[0][nodeCountX / 2];
 
         BuildPathNodeLinks();
+        GenerateFixedPath();
     }
 
     public void BuildPathNodeLinks()
@@ -182,7 +192,27 @@ public class Map : MonoBehaviour, IMap
         pathLine.SetVertexCount(0);      
     }
 
-    public void FindPath()
+    public GridNode GetRandomNode()
+    {
+        List<GridNode> availableGridNodes = new List<GridNode>();
+
+        foreach (List<GridNode> t in grid)
+        {
+            for (int x = 0; x < grid[0].Count; x++)
+            {
+                if(t[x].towerType == TowerType.None && t[x].placeable)
+                    availableGridNodes.Add(t[x]);
+            }
+        }
+
+        return availableGridNodes[Random.Range(0, availableGridNodes.Count)];
+    }
+
+    #endregion
+
+    #region Pathing
+    public
+    void FindPath()
     {
         PathRequestManager.Instance.pathFinder.FindPathImmediate(startNode, endNode, grid, out path);
         UpdatePathLineRenderer();
@@ -225,16 +255,10 @@ public class Map : MonoBehaviour, IMap
         }
         finally
         {
-            SetPathUnwalkable();
+            path.ForEach(x => x.placeable = false);
             UpdatePathLineRenderer();
         }
     }
-
-    public void SetPathUnwalkable()
-    {
-        path.ForEach(x => x.walkable = false);
-    }
-
     public void UpdatePathLineRenderer()
     {
         const float lineHeight = 0.2f;
@@ -251,9 +275,8 @@ public class Map : MonoBehaviour, IMap
         pathLine.SetPosition(path.Count + 3, new Vector3(endNode.gameObject.transform.localPosition.x, lineHeight, endNode.transform.localPosition.z - nodeHeight * 0.5f));
     }
 
-    public static List<Vector3> ConvertToVectorPath(List<GridNode> nodePath)
+    public static List<Vector3> ConvertToVectorPath(List<GridNode> nodePath, float height)
     {
-        const float height = 0.2f;
         List<Vector3> path = new List<Vector3>(nodePath.Count + 2);
 
         path.Add(new Vector3(nodePath[0].gameObject.transform.localPosition.x, height, nodePath[0].transform.localPosition.z + nodeHeight * 0.5f));
@@ -266,25 +289,28 @@ public class Map : MonoBehaviour, IMap
         return path;
     }
 
+    public bool GetPath()
+    {
+        return PathRequestManager.Instance.pathFinder.FindPathImmediate(startNode, endNode, grid, out path);
+    }
+    #endregion
+
+    #region Enemy
     public void SpawnEnemy(EnemyType type)
     {
         GameObject enemy = objectPool.GetEnemy(type);
         enemy.transform.parent = enemyContainer.transform;
-        enemy.transform.position = new Vector3(startNode.transform.position.x, enemy.transform.position.y, startNode.transform.position.z); //keep height
 
         Enemy enemyScript = enemy.GetComponent<Enemy>();
-        enemyScript.path = ConvertToVectorPath(path);
-        
+        enemyScript.path = ConvertToVectorPath(path, enemy.transform.position.y);//keep height
+
+        enemy.transform.position = enemyScript.path[0];
+
         enemies.Add(enemy);
         enemyScript.onReachedEnd += OnEnemyReachesEnd;
         enemyScript.onDied += OnEnemyDied;
 
         enemyScript.Go();
-    }
-
-    public bool GetPath()
-    {
-        return PathRequestManager.Instance.pathFinder.FindPathImmediate(startNode, endNode, grid, out path);
     }
 
     private void OnEnemyReachesEnd(GameObject obj)
@@ -299,22 +325,28 @@ public class Map : MonoBehaviour, IMap
 
     private void OnEnemyDied(GameObject obj)
     {
-        obj.GetComponent<Enemy>().onDied -= OnEnemyDied;
+        Enemy enemy = obj.GetComponent<Enemy>();
+        enemy.onDied -= OnEnemyDied;
+        resources += enemy.resourceReward;
+
         enemies.Remove(obj);
         obj.transform.parent = null;
         objectPool.ReleaseEnemy(obj);
         Debug.Log("Enemy Died");
     }
+    #endregion
 
+    #region Towers
     public void AddTower(int rowIndex, int colIndex, TowerType type)
     {
-        if (grid[rowIndex][colIndex].walkable && type != TowerType.None)
+        if (grid[rowIndex][colIndex].placeable && type != TowerType.None)
         {
             GameObject tower = objectPool.GetTower(type);
             towers.Add(tower);
             tower.transform.parent = towerContainer.transform;
             tower.transform.position = grid[rowIndex][colIndex].gameObject.transform.position;
             grid[rowIndex][colIndex].walkable = false;
+            grid[rowIndex][colIndex].placeable = false;
             grid[rowIndex][colIndex].towerType = type;
             tower.SetActive(true);
         }
@@ -323,6 +355,7 @@ public class Map : MonoBehaviour, IMap
     public void RemoveTower(int rowIndex, int colIndex)
     {
         grid[rowIndex][colIndex].walkable = true;
+        grid[rowIndex][colIndex].placeable = true;
         grid[rowIndex][colIndex].towerType = TowerType.None;
         objectPool.ReleaseTower(grid[rowIndex][colIndex].gameObject);
     }
@@ -345,16 +378,9 @@ public class Map : MonoBehaviour, IMap
         }
     }
 
-    public void SetTowers(MapChromosome towerLayout)
+    public void GetLayout()
     {
-        ClearTowers();
-        for (int z = 0; z < towerLayout.chromosome.Count; z++)
-        {
-            for (int x = 0; x < towerLayout.chromosome[z].Count; x++)
-            {
-                AddTower(z, x, towerLayout.chromosome[z][x]);
-            }
-        }
+        
     }
 
     public void InitialiseTestTowerLayout()
@@ -369,9 +395,84 @@ public class Map : MonoBehaviour, IMap
 
     public void CreateRandomTowerLayout()
     {
-        mapChromosome.Initialise();
-        mapChromosome.Randomise();
-        SetTowers(mapChromosome);
+        mapChromosomes.Add(new MapChromosome());
+        mapChromosomes[0].Initialise();
+        mapChromosomes[0].Randomise();
+        SetTowers(mapChromosomes[0]);
     }
 
+    #endregion
+
+    #region Layouts
+    public void SetTowers(MapChromosome towerLayout)
+    {
+        ClearTowers();
+        for (int z = 0; z < towerLayout.chromosome.Count; z++)
+        {
+            for (int x = 0; x < towerLayout.chromosome[z].Count; x++)
+            {
+                AddTower(z, x, towerLayout.chromosome[z][x]);
+            }
+        }
+    }
+
+    public void SaveLayout()
+    {
+        MapChromosome chromosome = geneContainer.AddComponent<MapChromosome>();
+        chromosome.map = this;
+        chromosome.Initialise();
+
+        for (int z = 0; z < grid.Count; z++)
+        {
+            for (int x = 0; x < grid[0].Count; x++)
+            {
+                chromosome.chromosome[z][x] = grid[z][x].towerType;
+            }
+        }
+        mapChromosomes.Add(chromosome);
+    }
+    #endregion
+
+
+    public void Reset()
+    {
+        resources = StartingResources;
+        enemyReachesEndCount = 0;
+    }
+
+    public void SetChromosomeFitness(int tickIndex)
+    {
+        mapChromosomes[tickIndex].Fitness = WaveManager.Instance.MaxEnemyCount - enemyReachesEndCount;
+    }
+
+    public void SimulateDecisionTick(int tickNumber)
+    {
+        //SetTowers(mapChromosomes[tickNumber]);
+    }
+
+    public void GenerateDecisionTick(int tickNumber)
+    {
+        //generate valid 
+        int cheapestTower = objectPool.CheapestTowerCost;
+        int totalBuildableTowers = resources / cheapestTower;
+
+        int towersToBuild = Random.Range(0, totalBuildableTowers+1);
+
+        while (towersToBuild > 0)
+        {
+            //pick tower at random
+            TowerType randomTowerType = MapChromosome.GetRandomTowerType();
+
+            //pick location at random
+            GridNode randomNode = GetRandomNode();
+
+            AddTower(randomNode.gridY, randomNode.gridX, randomTowerType);
+            resources -= objectPool.TowerPrefabs[randomTowerType].GetComponent<BaseTower>().resourceCost;
+
+            if (resources < cheapestTower)
+                towersToBuild = 0;
+        }
+
+        SaveLayout();
+    }
 }

@@ -34,10 +34,12 @@ namespace Assets.Scripts
                 }
         }
 
-        TowerType GetRandomTowerType()
+        public static TowerType GetRandomTowerType()
         {
             return (TowerType)Random.Range(0, Enum.GetValues(typeof(TowerType)).Length);
         }
+
+
 
         public int Length { get; set; }
 

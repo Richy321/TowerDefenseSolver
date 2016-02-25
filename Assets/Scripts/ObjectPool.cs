@@ -27,8 +27,25 @@ public class ObjectPool : MonoBehaviour
     }
 
     public Dictionary<TowerType, Pool> TowerPools = new Dictionary<TowerType, Pool>();
-    public Dictionary<EnemyType, Pool> EnemyPools = new Dictionary<EnemyType, Pool>(); 
-     
+    public Dictionary<EnemyType, Pool> EnemyPools = new Dictionary<EnemyType, Pool>();
+
+    public Dictionary<TowerType, GameObject> TowerPrefabs = new Dictionary<TowerType, GameObject>(); 
+
+
+    public int CheapestTowerCost
+    {
+        get
+        {
+            int minCost = int.MaxValue;
+            foreach (GameObject towerType in TowerPrefabs.Values)
+            {
+                BaseTower tower = towerType.GetComponent<BaseTower>();
+                minCost = Math.Min(tower.resourceCost, minCost);
+            }
+            return minCost;
+        }
+    }
+
     // Use this for initialization
     void Awake ()
     {
@@ -131,7 +148,7 @@ public class ObjectPool : MonoBehaviour
         if (pool.inactive.Count <= 0)
         {
             pool.inactive.Add(CreateTower(type));
-            Debug.LogWarning("Warning! - Had to create new Enemyon the fly, inactive list was empty");
+            Debug.LogWarning("Warning! - Had to create new Tower on the fly, inactive list was empty");
         }
 
         GameObject obj = pool.inactive[0];
@@ -140,7 +157,6 @@ public class ObjectPool : MonoBehaviour
         obj.SetActive(true);
         return obj;
     }
-
 
     public void ReleaseEnemy(GameObject obj)
     {

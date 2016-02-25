@@ -20,6 +20,8 @@ public class BaseTower : MonoBehaviour
     public bool applyInstantDamage = true;
     public float instantDamage = 5f;
 
+    public int resourceCost = 10;
+
     protected float nextFireTime;
     protected float nextMoveTime;
     protected float aimError;

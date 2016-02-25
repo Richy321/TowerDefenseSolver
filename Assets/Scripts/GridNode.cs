@@ -13,7 +13,7 @@ public class GridNode : MonoBehaviour, IHeapItem<GridNode>
     public GridNode parent;
 
     public bool walkable;
-
+    public bool placeable = true;
     public int gCost;
     public int hCost;
 

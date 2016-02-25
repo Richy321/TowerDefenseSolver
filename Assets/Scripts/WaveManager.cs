@@ -17,8 +17,20 @@ public class WaveManager : MonoBehaviour
     public int waveIndex;
     public int waveSpawnIndex;
     public List<Map> maps = new List<Map>();
-    public List<Wave> waves = new List<Wave>(); 
+    public List<Wave> waves = new List<Wave>();
 
+
+    private static WaveManager instance;
+
+    public static WaveManager Instance
+    {
+        get
+        {
+            if (!instance)
+                instance = FindObjectOfType<WaveManager>();
+            return instance;
+        }
+    }
 
     void Start ()
     {
@@ -68,5 +80,14 @@ public class WaveManager : MonoBehaviour
         test.spawnInterval = 2.0f;
 
         return test;
+    }
+
+
+    public int MaxEnemyCount
+    {
+        get
+        {
+            return waves.Sum(wave => wave.count);
+        }
     }
 }
