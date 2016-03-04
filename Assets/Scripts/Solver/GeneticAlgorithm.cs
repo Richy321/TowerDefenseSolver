@@ -38,9 +38,11 @@ namespace Assets.Scripts
         /// </summary>
         public float crossoverRate = 0.9f;
         public float mutationRate = 0.1f;
-        public bool elitism = false;
+        public bool elitism = true;
+        public float elitismPercentage = 0.1f;
         public int totalFitness;
         public int generationNo;
+        public int highestFitness;
         public List<T> population;
         public SelectionAlgorithm selectionAlgorithm = SelectionAlgorithm.RouletteWheel;
         public Action<List<T>>  onRequestGenerateFitness;
@@ -52,13 +54,24 @@ namespace Assets.Scripts
 
         public void EvolvePopulation()
         {
+            List<T> newPopulation = new List<T>();
+
             //sort fitness high->low
             population.Sort((a, b) => b.Fitness.CompareTo(a.Fitness));
 
+            //total fitness
             totalFitness = 0;
             population.ForEach(v => totalFitness += v.Fitness); //get total fitness
+            highestFitness = population.Count > 0 ? population[0].Fitness : 0;
 
-            List<T> newPopulation = new List<T>();
+            //elistism
+            if (elitism)
+            {
+                int elistimKeepCount = (int)Math.Ceiling(population.Count * elitismPercentage);
+                for (int i = 0; i < elistimKeepCount; i++)
+                    newPopulation.Add(population[i].Clone());
+            }
+
             //Selection Process
             while (newPopulation.Count < population.Count)
             {

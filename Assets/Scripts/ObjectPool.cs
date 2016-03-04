@@ -168,7 +168,7 @@ public class ObjectPool : MonoBehaviour
         obj.SetActive(false);
 
         obj.transform.parent = EnemyContainer.transform;
-        obj.transform.position = offscreenHoldingPoint;
+        obj.transform.position = new Vector3(offscreenHoldingPoint.x, obj.transform.position.y, offscreenHoldingPoint.z);
     }
 
     public void ReleaseTower(GameObject obj)
@@ -179,6 +179,6 @@ public class ObjectPool : MonoBehaviour
         obj.SetActive(false);
 
         obj.transform.parent = TowerContainer.transform;
-        obj.transform.position = offscreenHoldingPoint;
+        obj.transform.position = new Vector3(offscreenHoldingPoint.x, obj.transform.position.y, offscreenHoldingPoint.z);
     }
 }

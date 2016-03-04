@@ -316,6 +316,7 @@ public class Map : MonoBehaviour, IMap
     {
         Enemy enemyScript = obj.GetComponent<Enemy>();
         enemyScript.onReachedEnd -= OnEnemyReachesEnd;
+        enemyScript.onDied -= OnEnemyDied;
         enemies.Remove(obj);
         obj.transform.parent = null;
         objectPool.ReleaseEnemy(obj);
@@ -334,6 +335,7 @@ public class Map : MonoBehaviour, IMap
     private void OnEnemyDied(GameObject obj)
     {
         Enemy enemy = obj.GetComponent<Enemy>();
+        enemy.Reset();
         enemy.onDied -= OnEnemyDied;
         resources += enemy.resourceReward;
         resourcesCollected += enemy.resourceReward;
@@ -472,28 +474,34 @@ public class Map : MonoBehaviour, IMap
         state = MapState.Running;   
     }
 
+    public void MapStartWave()
+    {
+        state = MapState.Running;
+    }
+
     #region Genetic Algorithm functions
     public void SimulateDecisionTick(int tickNumber)
     {
         if (buildDecisionsChromosome.buildDecisionGenes.Count > tickNumber)
         {
             TowerType towerType = buildDecisionsChromosome.buildDecisionGenes[tickNumber].towerType;
-            int gridX = buildDecisionsChromosome.buildDecisionGenes[tickNumber].gridXCoord;
-            int gridZ = buildDecisionsChromosome.buildDecisionGenes[tickNumber].gridZCoord;
+            if (towerType != TowerType.None)
+            {
+                int gridX = buildDecisionsChromosome.buildDecisionGenes[tickNumber].gridXCoord;
+                int gridZ = buildDecisionsChromosome.buildDecisionGenes[tickNumber].gridZCoord;
 
-            AddTower(gridZ, gridX, towerType, true);
+                AddTower(gridZ, gridX, towerType, true);
+            }
         }
     }
 
     public void GenerateDecisionTick(int tickNumber)
     {
-        if (Random.value > 0.5 )
-        {
-            //pick tower at random
-            TowerType randomTowerType = GetRandomAffordableTowerType();
-            if (randomTowerType == TowerType.None)
-                return;
+        TowerType randomTowerType;
 
+        if (Random.value > 0.5 && 
+            (randomTowerType = GetRandomAffordableTowerType()) != TowerType.None) 
+        {
             //pick location at random
             GridNode randomNode = GetRandomPlaceableNode();
 
@@ -518,6 +526,8 @@ public class Map : MonoBehaviour, IMap
         ClearTowers();
         for (int i = enemies.Count-1; i > 0; i--)
             enemies[i].GetComponent<Enemy>().onDied(enemies[i]);
+
+        state = MapState.Idle;
     }
     #endregion
 
@@ -525,6 +535,11 @@ public class Map : MonoBehaviour, IMap
     public static TowerType GetRandomTowerType()
     {
         return (TowerType)Random.Range(0, Enum.GetValues(typeof(TowerType)).Length);
+    }
+
+    public GridNode GetRandomNode()
+    {
+        return grid[Random.Range(0, grid.Count)][Random.Range(0, grid[0].Count)];
     }
 
     public TowerType GetRandomAffordableTowerType()

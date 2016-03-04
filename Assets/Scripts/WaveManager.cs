@@ -41,6 +41,7 @@ public class WaveManager : MonoBehaviour
             maps = FindObjectsOfType<Map>().ToList();
 
         waves.Add(CreateTestWave());
+        waves.Add(CreateTestWave());
     }
 	
 	// Update is called once per frame
@@ -62,8 +63,7 @@ public class WaveManager : MonoBehaviour
     public void SpawnNextWave()
     {
         if (waveSpawnIndex != waves.Count - 1)
-            waveSpawnIndex++;
-        SpawnWave(waveSpawnIndex);
+            SpawnWave(++waveIndex);
     }
 
 
@@ -74,14 +74,14 @@ public class WaveManager : MonoBehaviour
         {
             foreach (Map map in maps)
             {
-                map.SpawnEnemy(wave.type);
+                if(map.state != Map.MapState.FinishedGame)
+                    map.SpawnEnemy(wave.type);
             }
             yield return new WaitForSeconds(wave.spawnInterval);
         }
 
         isInWave = false;
         if(OnWaveFinished != null) OnWaveFinished(waveIndex);
-        waveIndex++;
         yield return null;
     }
 
@@ -114,4 +114,10 @@ public class WaveManager : MonoBehaviour
     {
         isActive = false;
     }
+
+    public void ResetWaves()
+    {
+        waveIndex = 0;
+    }
+
 }

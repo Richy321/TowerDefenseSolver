@@ -55,9 +55,24 @@ public class BuildDecisionsChromosome : MonoBehaviour, IChromosome<BuildDecision
         }
     }
 
-    public void Randomise()
+    public void Randomise(int numBuildDecisions)
     {
-        throw new NotImplementedException();
+        for (int i = 0; i < numBuildDecisions; i++)
+            buildDecisionGenes.Add(BuildRandomBuildDecision());
+    }
+
+    public BuildDecision BuildRandomBuildDecision()
+    {
+        GridNode randomNode = map.GetRandomNode();
+
+        BuildDecision bd = new BuildDecision
+        {
+            gridXCoord = randomNode.gridX,
+            gridZCoord = randomNode.gridZ,
+            towerType = Map.GetRandomTowerType()
+        };
+
+        return bd;
     }
     #endregion
 

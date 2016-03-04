@@ -79,4 +79,8 @@ public class Enemy : MonoBehaviour
         return true;
     }
 
+    public void Reset()
+    {
+        targetIndex = 0;
+    }
 }
