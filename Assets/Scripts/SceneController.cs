@@ -53,8 +53,9 @@ public class SceneController : MonoBehaviour
     public int endCaseGenerations = int.MaxValue;
     public int endCaseFitnessValue = int.MaxValue;
 
-    public List<BuildDecisionsChromosome> solutions = new List<BuildDecisionsChromosome>(); 
+    public List<BuildDecisionsChromosome> solutions = new List<BuildDecisionsChromosome>();
 
+    private object mapInstanceLock = new object();
 
     // Use this for initialization
     void Start ()
@@ -75,40 +76,45 @@ public class SceneController : MonoBehaviour
 	    if (state == SceneState.Idle)
 	        return;
 
-	    bool allMapsFinishedWave = mapInstances.All(mapInstance => mapInstance.state == Map.MapState.FinishedGame || mapInstance.state == Map.MapState.CompletedWave);
-	    if (allMapsFinishedWave)
+	    lock (mapInstanceLock)
 	    {
-	        if (waveManager.waveIndex < waveManager.waves.Count - 1)
+	        bool allMapsFinishedWave =
+	            mapInstances.All(
+	                mapInstance =>
+	                    mapInstance.state == Map.MapState.FinishedGame || mapInstance.state == Map.MapState.CompletedWave);
+	        if (allMapsFinishedWave)
 	        {
-                foreach (Map mapInstance in mapInstances)
-                    mapInstance.MapStartWave();
-                waveManager.SpawnNextWave();
-            }
-	        else
+	            if (waveManager.waveIndex < waveManager.waves.Count - 1)
+	            {
+	                foreach (Map mapInstance in mapInstances)
+	                    mapInstance.MapStartWave();
+	                waveManager.SpawnNextWave();
+	            }
+	            else
+	            {
+	                foreach (Map mapInstance in mapInstances)
+	                    mapInstance.MapFinish();
+	            }
+	        }
+
+	        bool allMapsFinishedGame = mapInstances.All(mapInstance => mapInstance.state == Map.MapState.FinishedGame);
+
+	        if (state == SceneState.FindingFitnessValues || state == SceneState.GeneratingInitialPopulation)
 	        {
-                foreach (Map mapInstance in mapInstances)
-                    mapInstance.MapFinish();
-            }
-	    }
+	            decisionTimeCounter += Time.deltaTime;
+	        }
 
-        bool allMapsFinishedGame = mapInstances.All(mapInstance => mapInstance.state == Map.MapState.FinishedGame);
-
-        if (state == SceneState.FindingFitnessValues || state == SceneState.GeneratingInitialPopulation)
-	    {
-            decisionTimeCounter += Time.deltaTime;
-        }
-
-	    if (state == SceneState.FindingFitnessValues)
-	    {
-	        if (allMapsFinishedGame)
+	        if (state == SceneState.FindingFitnessValues)
 	        {
-                state = SceneState.Idle;
+	            if (allMapsFinishedGame)
+	            {
+	                state = SceneState.Idle;
 
-                if (AutoEvolve)
-	                StartEvolve();
+	                if (AutoEvolve)
+	                    StartEvolve();
+	            }
 	        }
 	    }
-
 	    /*if (state == SceneState.GeneratingInitialPopulation)
 	    {
 	        if (allMapsFinishedGame)

@@ -292,7 +292,7 @@ public class Map : MonoBehaviour, IMap
     #endregion
 
     #region Enemy
-    public void SpawnEnemy(EnemyType type)
+    public void SpawnEnemy(EnemyType type, float difficultyMultiplier)
     {
         if (state == MapState.Running)
         {
@@ -301,9 +301,12 @@ public class Map : MonoBehaviour, IMap
 
             Enemy enemyScript = enemy.GetComponent<Enemy>();
             enemyScript.path = ConvertToVectorPath(path, enemy.transform.position.y); //keep height
+            enemyScript.health *= difficultyMultiplier;
+            enemyScript.speed *= difficultyMultiplier;
+            enemyScript.resourceReward = (int)(enemyScript.resourceReward * difficultyMultiplier);
 
             enemy.transform.position = enemyScript.path[0];
-
+           
             enemies.Add(enemy);
             enemyScript.onReachedEnd += OnEnemyReachesEnd;
             enemyScript.onDied += OnEnemyDied;

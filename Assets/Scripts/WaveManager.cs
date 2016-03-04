@@ -11,6 +11,7 @@ public class WaveManager : MonoBehaviour
         public EnemyType type;
         public int count;
         public float spawnInterval;
+        public float difficultyMultiplier = 1.0f;
     }
 
     public bool isActive;
@@ -23,6 +24,8 @@ public class WaveManager : MonoBehaviour
     public Action<int> OnWaveFinished;
     public Action<int> OnWaveStart; 
      
+    public float difficultyModifier = 0.1f;
+
     private static WaveManager instance;
 
     public static WaveManager Instance
@@ -40,8 +43,7 @@ public class WaveManager : MonoBehaviour
         if(maps.Count == 0)
             maps = FindObjectsOfType<Map>().ToList();
 
-        waves.Add(CreateTestWave());
-        waves.Add(CreateTestWave());
+        CreateIncreasingDifficultyWaves(10);
     }
 	
 	// Update is called once per frame
@@ -75,7 +77,7 @@ public class WaveManager : MonoBehaviour
             foreach (Map map in maps)
             {
                 if(map.state != Map.MapState.FinishedGame)
-                    map.SpawnEnemy(wave.type);
+                    map.SpawnEnemy(wave.type, wave.difficultyMultiplier);
             }
             yield return new WaitForSeconds(wave.spawnInterval);
         }
@@ -94,6 +96,22 @@ public class WaveManager : MonoBehaviour
         test.spawnInterval = 2.0f;
 
         return test;
+    }
+
+    private void CreateIncreasingDifficultyWaves(int count)
+    {
+        float difficultyMultiplier = 1.0f;
+        
+        for (int i = 0; i < count; i++)
+        {
+            Wave wave = new Wave();
+            wave.type = EnemyType.Fast;
+            wave.count = (int)(10 * difficultyMultiplier);
+            wave.spawnInterval = 2.0f;
+            wave.difficultyMultiplier = difficultyMultiplier;
+            difficultyMultiplier += difficultyModifier;
+            waves.Add(wave);
+        }
     }
 
     public int MaxEnemyCount
