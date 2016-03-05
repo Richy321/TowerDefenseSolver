@@ -5,8 +5,12 @@ using System.Collections.Generic;
 
 public class Enemy : MonoBehaviour
 {
+    public float startSpeed = 10;
     public float speed = 10;
-    public float health = 10;
+
+    public float startHealth = 15;
+    public float health = 15;
+
     public List<Vector3> path;
     private int targetIndex;
     public EnemyType type;
@@ -15,7 +19,9 @@ public class Enemy : MonoBehaviour
     public Action<GameObject> onReachedEnd;
     public Action<GameObject> onDied;
 
+    public int startResourceReward = 2;
     public int resourceReward = 2;
+
     public int lifeDeduction = 1;
 
     // Use this for initialization
@@ -83,5 +89,8 @@ public class Enemy : MonoBehaviour
     {
         StopCoroutine("FollowPath");
         targetIndex = 0;
+        health = startHealth;
+        speed = startSpeed;
+        resourceReward = startResourceReward;
     }
 }

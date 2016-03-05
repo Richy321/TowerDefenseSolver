@@ -24,7 +24,8 @@ public class WaveManager : MonoBehaviour
     public Action<int> OnWaveFinished;
     public Action<int> OnWaveStart; 
      
-    public float difficultyModifier = 0.5f;
+    public float difficultyModifier = 1.5f;
+    
 
     private static WaveManager instance;
 
@@ -105,7 +106,7 @@ public class WaveManager : MonoBehaviour
     private void CreateIncreasingDifficultyWaves(int count)
     {
         float difficultyMultiplier = 1.0f;
-        
+
         for (int i = 0; i < count; i++)
         {
             Wave wave = new Wave();
