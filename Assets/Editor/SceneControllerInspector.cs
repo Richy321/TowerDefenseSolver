@@ -15,6 +15,11 @@ namespace Assets.Editor
             {
                 curScript.StartGA();
             }
+
+            if (GUILayout.Button("Generate maps"))
+            {
+                curScript.GenerateMaps();
+            }
         }
     }
 }

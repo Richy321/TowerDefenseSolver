@@ -24,7 +24,7 @@ public class WaveManager : MonoBehaviour
     public Action<int> OnWaveFinished;
     public Action<int> OnWaveStart; 
      
-    public float difficultyModifier = 0.1f;
+    public float difficultyModifier = 0.5f;
 
     private static WaveManager instance;
 
@@ -71,7 +71,11 @@ public class WaveManager : MonoBehaviour
 
     private IEnumerator DoWave(Wave wave)
     {
+        foreach (Map mapInstance in maps)
+            mapInstance.currentWaveEnemiesLeft = wave.count;
+
         if (OnWaveStart != null) OnWaveStart(wave.count);
+
         for (waveSpawnIndex = 0; waveSpawnIndex < wave.count; waveSpawnIndex++)
         {
             foreach (Map map in maps)

@@ -318,40 +318,43 @@ public class Map : MonoBehaviour, IMap
     private void OnEnemyReachesEnd(GameObject obj)
     {
         Enemy enemyScript = obj.GetComponent<Enemy>();
-        enemyScript.onReachedEnd -= OnEnemyReachesEnd;
+        enemyScript.Reset();
         enemyScript.onDied -= OnEnemyDied;
-        enemies.Remove(obj);
-        obj.transform.parent = null;
-        objectPool.ReleaseEnemy(obj);
+        enemyScript.onReachedEnd -= OnEnemyReachesEnd;
 
         currentWaveEnemiesLeft--;
         lives -= enemyScript.lifeDeduction;
         lives = Math.Max(0, lives);
 
+        enemies.Remove(obj);
+        obj.transform.parent = null;
+        objectPool.ReleaseEnemy(obj);
+
         if (lives < 1)
             MapFinish();
-
-        if (currentWaveEnemiesLeft <= 0)
+        else if (currentWaveEnemiesLeft <= 0)
             state = MapState.CompletedWave;
     }
 
     private void OnEnemyDied(GameObject obj)
     {
-        Enemy enemy = obj.GetComponent<Enemy>();
-        enemy.Reset();
-        enemy.onDied -= OnEnemyDied;
-        resources += enemy.resourceReward;
-        resourcesCollected += enemy.resourceReward;
+        Enemy enemyScript = obj.GetComponent<Enemy>();
+        enemyScript.Reset();
+        enemyScript.onDied -= OnEnemyDied;
+        enemyScript.onReachedEnd -= OnEnemyReachesEnd;
+
+        resources += enemyScript.resourceReward;
+        resourcesCollected += enemyScript.resourceReward;
         currentWaveEnemiesLeft--;
 
         enemies.Remove(obj);
         obj.transform.parent = null;
         objectPool.ReleaseEnemy(obj);
-        Debug.Log("Enemy Died");
 
         if (currentWaveEnemiesLeft <= 0)
             state = MapState.CompletedWave;
     }
+
     #endregion
 
     #region Towers
@@ -479,7 +482,8 @@ public class Map : MonoBehaviour, IMap
 
     public void MapStartWave()
     {
-        state = MapState.Running;
+        if(state != MapState.FinishedGame)
+            state = MapState.Running;
     }
 
     #region Genetic Algorithm functions

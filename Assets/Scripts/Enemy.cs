@@ -38,7 +38,7 @@ public class Enemy : MonoBehaviour
     IEnumerator FollowPath()
     {
         Vector3 currentWaypoint = path[0];
-        while (true)
+        while (isActiveAndEnabled)
         {
             if (transform.position == currentWaypoint)
             {
@@ -58,7 +58,7 @@ public class Enemy : MonoBehaviour
 
     void Stop()
     {
-        if (onReachedEnd != null)
+        if (isActiveAndEnabled && onReachedEnd != null)
             onReachedEnd(gameObject);
     }
 
@@ -81,6 +81,7 @@ public class Enemy : MonoBehaviour
 
     public void Reset()
     {
+        StopCoroutine("FollowPath");
         targetIndex = 0;
     }
 }

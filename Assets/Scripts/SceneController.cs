@@ -27,8 +27,12 @@ public class SceneController : MonoBehaviour
     public static DisplayMode displayMode = DisplayMode.Full;
 
     public List<Map> mapInstances = new List<Map>();
+    public GameObject mapPrefab;
+
     public WaveManager waveManager;
     public GeneticAlgorithm ga;
+
+    public int generateMapsCount = 16;
 
     public bool isSimulating = false; //is simulating or generating initial population
 
@@ -57,6 +61,14 @@ public class SceneController : MonoBehaviour
 
     private object mapInstanceLock = new object();
 
+    public int RemainingEnemies
+    {
+        get
+        {
+            return mapInstances.Sum(mapInstance => mapInstance.currentWaveEnemiesLeft);
+        }
+    }
+
     // Use this for initialization
     void Start ()
     {
@@ -78,10 +90,16 @@ public class SceneController : MonoBehaviour
 
 	    lock (mapInstanceLock)
 	    {
-	        bool allMapsFinishedWave =
-	            mapInstances.All(
-	                mapInstance =>
-	                    mapInstance.state == Map.MapState.FinishedGame || mapInstance.state == Map.MapState.CompletedWave);
+	        bool allMapsFinishedWave = true;
+            foreach (Map mapInstance in mapInstances)
+            {
+                if (mapInstance.state != Map.MapState.CompletedWave && mapInstance.state != Map.MapState.FinishedGame)
+                {
+                    allMapsFinishedWave = false;
+                    break;
+                }
+            }
+
 	        if (allMapsFinishedWave)
 	        {
 	            if (waveManager.waveIndex < waveManager.waves.Count - 1)
@@ -110,24 +128,19 @@ public class SceneController : MonoBehaviour
 	            {
 	                state = SceneState.Idle;
 
-	                if (AutoEvolve)
+                    //check for solutions
+
+	                foreach (Map mapInstance in mapInstances)
+	                {
+	                    if (mapInstance.lives > 0)
+	                        solutions.Add(mapInstance.buildDecisionsChromosome);
+	                }
+
+                    if (AutoEvolve)
 	                    StartEvolve();
 	            }
 	        }
 	    }
-	    /*if (state == SceneState.GeneratingInitialPopulation)
-	    {
-	        if (allMapsFinishedGame)
-	        {
-                List<BuildDecisionsChromosome> initial = new List<BuildDecisionsChromosome>(mapInstances.Count);
-	            initial.AddRange(mapInstances.Select(mapInstance => mapInstance.buildDecisionsChromosome));
-	            ga.SetInitialPopulation(initial);
-	            state = SceneState.FindingFitnessValues;
-	            isSimulating = true;
-                if (AutoEvolve)
-                    StartEvolve();
-	        }
-	    }*/
 
 	    if (decisionTimeCounter > decisionFrequency)
 	    {
@@ -171,18 +184,13 @@ public class SceneController : MonoBehaviour
     private void InitialiseGAPopulation(int decisionCount)
     {
         foreach (Map mapInstance in mapInstances)
-        {
-            for (int i = 0; i < decisionCount; i++)
-            {
-                mapInstance.buildDecisionsChromosome.Randomise(decisionCount);
-            }
-        }
+            mapInstance.buildDecisionsChromosome.Randomise(decisionCount);
+
         List<BuildDecisionsChromosome> initial = new List<BuildDecisionsChromosome>(mapInstances.Count);
         initial.AddRange(mapInstances.Select(mapInstance => mapInstance.buildDecisionsChromosome));
         ga.SetInitialPopulation(initial);
         state = SceneState.FindingFitnessValues;
         isSimulating = true;
-
     }
 
     public void StartEvolve()
@@ -206,7 +214,7 @@ public class SceneController : MonoBehaviour
 
     private void OnGAFinish()
     {
-        Debug.Log("GA Finshed");
+        Debug.Log("GA Finished");
     }
 
     private void OnWaveFinished(int i)
@@ -215,9 +223,6 @@ public class SceneController : MonoBehaviour
 
     private void OnWaveStart(int count)
     {
-        foreach (Map mapInstance in mapInstances)
-            mapInstance.currentWaveEnemiesLeft = count;
-
         DecisionTick(decisionTickCounter++);
         DecisionTick(decisionTickCounter++);
     }
@@ -231,11 +236,38 @@ public class SceneController : MonoBehaviour
             else
                 mapInstance.GenerateDecisionTick(i);
         }
-
     }
 
     public void UpdateTimeScale()
     {
         Time.timeScale = timeScale;
+    }
+
+    public void GenerateMaps()
+    {
+        GenerateMaps(generateMapsCount);
+    }
+
+    private void GenerateMaps(int count)
+    {
+        int sqrtWhole = (int)Math.Floor(Mathf.Sqrt(count));
+        int remainder = count - sqrtWhole*sqrtWhole;
+
+        float gapX = 5.0f;
+        float gapY = 5.0f;
+
+        float mapWidth = 20.0f;
+        float mapHeight = 20.0f;
+
+        for (int i = 0; i <= sqrtWhole; i++)
+        {
+            int zCount = i == sqrtWhole ? remainder : sqrtWhole;
+            for (int j = 0; j < zCount; j++)
+            {
+                GameObject map = GameObject.Instantiate(mapPrefab);
+                map.name = "Map (" + j + "," + i + ")";
+                map.transform.position = new Vector3(j * (mapWidth + gapX), 0.0f, i * (mapHeight + gapY));
+            }
+        }
     }
 }
