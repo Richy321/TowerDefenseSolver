@@ -2,11 +2,13 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 
 public class Enemy : MonoBehaviour
 {
-    public float startSpeed = 10;
-    public float speed = 10;
+    public float startSpeed = 1;
+    public float speed = 1;
+    public float waveStartSpeed = 1;
 
     public float startHealth = 15;
     public float health = 15;
@@ -83,6 +85,16 @@ public class Enemy : MonoBehaviour
             return false;
         }
         return true;
+    }
+
+    public void Slow(float amount)
+    {
+        speed = waveStartSpeed * (1.0f - amount);
+    }
+
+    public void UnSlow()
+    {
+        speed = waveStartSpeed;
     }
 
     public void Reset()

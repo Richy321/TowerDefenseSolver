@@ -301,12 +301,13 @@ public class Map : MonoBehaviour, IMap
 
             Enemy enemyScript = enemy.GetComponent<Enemy>();
             enemyScript.path = ConvertToVectorPath(path, enemy.transform.position.y); //keep height
-            enemyScript.health *= difficultyMultiplier;
-            enemyScript.speed *= difficultyMultiplier;
-            enemyScript.resourceReward = (int)(enemyScript.resourceReward * difficultyMultiplier);
-
             enemy.transform.position = enemyScript.path[0];
-           
+
+            enemyScript.health = enemyScript.startHealth * difficultyMultiplier;
+            enemyScript.speed =  enemyScript.startSpeed * difficultyMultiplier;
+            enemyScript.waveStartSpeed = enemyScript.speed;
+            enemyScript.resourceReward = (int)(enemyScript.startResourceReward * difficultyMultiplier);
+
             enemies.Add(enemy);
             enemyScript.onReachedEnd += OnEnemyReachesEnd;
             enemyScript.onDied += OnEnemyDied;

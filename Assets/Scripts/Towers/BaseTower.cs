@@ -94,8 +94,6 @@ public class BaseTower : MonoBehaviour
         }
 	}
 
-
-
     protected virtual void OnTriggerStay(Collider other)
     {
 		if(!target || !target.gameObject.activeInHierarchy)
