@@ -7,10 +7,15 @@ public class ObjectPool : MonoBehaviour
 {
     public GameObject fastEnemyPrefab;
     public GameObject strongEnemyPrefab;
+    public GameObject fastEnemyHighQualityPrefab;
+    public GameObject strongEnemyHighQualityPrefab;
 
     public GameObject singleTowerPrefab;
     public GameObject splashTowerPrefab;
     public GameObject slowTowerPrefab;
+    public GameObject singleTowerHighQualityPrefab;
+    public GameObject splashTowerHighQualityPrefab;
+    public GameObject slowTowerHighQualityPrefab;
 
     public GameObject EnemyContainer;
     public GameObject TowerContainer;
@@ -18,7 +23,9 @@ public class ObjectPool : MonoBehaviour
     public int towerInitialiseCount = 20;
     public int enemyInitialiseCount = 20;
 
-    public Vector3 offscreenHoldingPoint = new Vector3(1000f,1000f,1000f);
+    public static Vector3 offscreenHoldingPoint = new Vector3(1000f,1000f,1000f);
+
+    public bool UseHighQualityAssets = false;
 
     public class Pool
     {
@@ -57,9 +64,9 @@ public class ObjectPool : MonoBehaviour
             TowerPrefabs.Add(towerType, null);
         }
         //Todo custom dictionary inspector to assign these directly
-        TowerPrefabs[TowerType.SingleDamage] = singleTowerPrefab;
-        TowerPrefabs[TowerType.Slow] = slowTowerPrefab;
-        TowerPrefabs[TowerType.SplashDamage] = splashTowerPrefab;
+        TowerPrefabs[TowerType.SingleDamage] = UseHighQualityAssets ? singleTowerHighQualityPrefab : singleTowerPrefab;
+        TowerPrefabs[TowerType.Slow] = UseHighQualityAssets ? slowTowerHighQualityPrefab : slowTowerPrefab;
+        TowerPrefabs[TowerType.SplashDamage] = UseHighQualityAssets ? splashTowerHighQualityPrefab : splashTowerPrefab;
 
         foreach (TowerType towerType in Enum.GetValues(typeof (TowerType)))
         {
@@ -98,10 +105,10 @@ public class ObjectPool : MonoBehaviour
         switch (type)
         {
             case EnemyType.Fast:
-                enemy = Instantiate(fastEnemyPrefab);
+                enemy = Instantiate(UseHighQualityAssets ? fastEnemyHighQualityPrefab : fastEnemyPrefab);
                 break;
             case EnemyType.Strong:
-                enemy = Instantiate(strongEnemyPrefab);
+                enemy = Instantiate(UseHighQualityAssets ? strongEnemyHighQualityPrefab : strongEnemyPrefab);
                 break;
             default:
                 throw new ArgumentOutOfRangeException("type", type, null);

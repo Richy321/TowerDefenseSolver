@@ -26,19 +26,37 @@ public class Enemy : MonoBehaviour
 
     public int lifeDeduction = 1;
 
-    // Use this for initialization
-    void Start ()
+    public Animator anim;
+    private int isDeadHash = Animator.StringToHash("IsDead");
+    private int speedHash = Animator.StringToHash("Speed");
+
+    private float angularVelocity = 10.0f;
+
+    public enum State
     {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+        Alive,
+        Dying,
+        Dead
+    }
+
+    public State state = State.Alive;
+
+    // Use this for initialization
+    void Start()
+    {
+        if (!anim)
+            anim = GetComponent<Animator>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
 
     public void Go()
     {
+        state = State.Alive;
         StopCoroutine("FollowPath");
         StartCoroutine("FollowPath");
     }
@@ -58,8 +76,10 @@ public class Enemy : MonoBehaviour
                 }
                 currentWaypoint = path[targetIndex];
             }
-            
-            transform.position = Vector3.MoveTowards(transform.position, currentWaypoint, speed * Time.deltaTime);
+            Vector3 dir = currentWaypoint - transform.position;
+            Quaternion facingDir = Quaternion.LookRotation(dir);
+            transform.rotation = facingDir;//Quaternion.Slerp(transform.rotation, facingDir, angularVelocity * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, currentWaypoint, speed*Time.deltaTime);
             yield return null;
         }
     }
@@ -80,8 +100,22 @@ public class Enemy : MonoBehaviour
         health -= amount;
         if (health <= 0)
         {
-            if (onDied != null)
-                onDied(gameObject);
+            if (state == State.Alive)
+            {
+                state = State.Dying;
+                StopCoroutine("FollowPath");
+                if (anim)
+                    StartCoroutine("WaitForDeathAnimationComplete");
+                else
+                {
+                    if (onDied != null)
+                        onDied(gameObject);
+                    else
+                        gameObject.transform.position = ObjectPool.offscreenHoldingPoint;
+
+                    state = State.Dead;
+                }
+            }
             return false;
         }
         return true;
@@ -89,7 +123,7 @@ public class Enemy : MonoBehaviour
 
     public void Slow(float amount)
     {
-        speed = waveStartSpeed * (1.0f - amount);
+        speed = waveStartSpeed*(1.0f - amount);
     }
 
     public void UnSlow()
@@ -99,10 +133,34 @@ public class Enemy : MonoBehaviour
 
     public void Reset()
     {
+        state = State.Alive;
+        if (anim)
+        {
+            anim.SetBool(isDeadHash, false);
+            anim.SetFloat(speedHash, speed);
+        }
         StopCoroutine("FollowPath");
         targetIndex = 0;
         health = startHealth;
         speed = startSpeed;
         resourceReward = startResourceReward;
+    }
+
+    IEnumerator WaitForDeathAnimationComplete()
+    {
+        Debug.Log("WaitForDeathAnimationComplete");
+        anim.SetBool(isDeadHash, true);
+        yield return null;
+        Debug.Log("wait for next frame complete");
+
+        yield return new WaitForSeconds(3.0f); //GetAnimationState and Clip info do not seem to be returning correct values, fix this to 3.of for time being
+        Debug.Log("Death Animation complete!");
+
+        if (onDied != null)
+            onDied(gameObject);
+        else
+            gameObject.transform.position = ObjectPool.offscreenHoldingPoint;
+
+        state = State.Dead;
     }
 }

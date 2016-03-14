@@ -99,7 +99,7 @@ public class BaseTower : MonoBehaviour
 		if(!target || !target.gameObject.activeInHierarchy)
 		{
             Enemy enemy = other.gameObject.GetComponentInParent<Enemy>();
-            if(enemy && targettingTypes.Contains(enemy.targettingType))
+            if(enemy && targettingTypes.Contains(enemy.targettingType) && enemy.state == Enemy.State.Alive)
 	        {
 	            target = other.gameObject.transform;
 	        }
