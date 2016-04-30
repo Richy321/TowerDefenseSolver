@@ -2,6 +2,5 @@
 {
     None,
     SingleDamage,
-    SplashDamage,
     Slow
 }

@@ -1,0 +1,19 @@
+Generation #0
+Population Fitness:0
+mapFitnessValue
+mapFitnessValue
+mapFitnessValue
+mapFitnessValue
+mapFitnessValue
+mapFitnessValue
+mapFitnessValue
+mapFitnessValue
+mapFitnessValue
+mapFitnessValue
+mapFitnessValue
+mapFitnessValue
+mapFitnessValue
+mapFitnessValue
+mapFitnessValue
+mapFitnessValue
+

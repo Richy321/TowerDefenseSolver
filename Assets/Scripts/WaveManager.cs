@@ -60,6 +60,7 @@ public class WaveManager : MonoBehaviour
     public void SpawnWave(int i)
     {
         isInWave = true;
+        StopCoroutine("DoWave");
         StartCoroutine("DoWave", waves[waveIndex]);
     }
 

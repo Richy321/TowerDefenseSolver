@@ -507,8 +507,7 @@ public class Map : MonoBehaviour, IMap
     {
         TowerType randomTowerType;
 
-        if (Random.value > 0.5 && 
-            (randomTowerType = GetRandomAffordableTowerType()) != TowerType.None) 
+        if ((randomTowerType = GetRandomAffordableTowerType()) != TowerType.None) 
         {
             //pick location at random
             GridNode randomNode = GetRandomPlaceableNode();

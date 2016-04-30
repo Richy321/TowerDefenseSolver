@@ -10,13 +10,6 @@ public class ObjectPool : MonoBehaviour
     public GameObject fastEnemyHighQualityPrefab;
     public GameObject strongEnemyHighQualityPrefab;
 
-    public GameObject singleTowerPrefab;
-    public GameObject splashTowerPrefab;
-    public GameObject slowTowerPrefab;
-    public GameObject singleTowerHighQualityPrefab;
-    public GameObject splashTowerHighQualityPrefab;
-    public GameObject slowTowerHighQualityPrefab;
-
     public GameObject EnemyContainer;
     public GameObject TowerContainer;
 
@@ -36,7 +29,10 @@ public class ObjectPool : MonoBehaviour
     public Dictionary<TowerType, Pool> TowerPools = new Dictionary<TowerType, Pool>();
     public Dictionary<EnemyType, Pool> EnemyPools = new Dictionary<EnemyType, Pool>();
 
-    public Dictionary<TowerType, GameObject> TowerPrefabs = new Dictionary<TowerType, GameObject>(); 
+    public Dictionary<TowerType, GameObject> TowerPrefabs = new Dictionary<TowerType, GameObject>();
+
+    public List<TowerPrefabInfo> TowerPrefabsStructs;
+
 
     public int CheapestTowerCost
     {
@@ -62,11 +58,12 @@ public class ObjectPool : MonoBehaviour
             if (towerType == TowerType.None)
                 continue;
             TowerPrefabs.Add(towerType, null);
+            foreach (TowerPrefabInfo towerPrefabsStruct in TowerPrefabsStructs)
+            {
+                if(towerPrefabsStruct.towerType == towerType)
+                    TowerPrefabs[towerType] =  UseHighQualityAssets ? towerPrefabsStruct.highQuality : towerPrefabsStruct.lowQuality;
+            }
         }
-        //Todo custom dictionary inspector to assign these directly
-        TowerPrefabs[TowerType.SingleDamage] = UseHighQualityAssets ? singleTowerHighQualityPrefab : singleTowerPrefab;
-        TowerPrefabs[TowerType.Slow] = UseHighQualityAssets ? slowTowerHighQualityPrefab : slowTowerPrefab;
-        TowerPrefabs[TowerType.SplashDamage] = UseHighQualityAssets ? splashTowerHighQualityPrefab : splashTowerPrefab;
 
         foreach (TowerType towerType in Enum.GetValues(typeof (TowerType)))
         {
@@ -77,7 +74,6 @@ public class ObjectPool : MonoBehaviour
             for (int i = 0; i < towerInitialiseCount; i++)
                 TowerPools[towerType].inactive.Add(CreateTower(towerType));            
         }
-
 
         foreach (EnemyType enemyType in Enum.GetValues(typeof (EnemyType)))
         {

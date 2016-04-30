@@ -36,7 +36,7 @@ public class SceneController : MonoBehaviour
 
     public bool isSimulating = false; //is simulating or generating initial population
 
-    private bool autoEvolve = false;
+    private bool autoEvolve = true;
     public bool AutoEvolve
     {
         get { return autoEvolve; }
@@ -58,6 +58,8 @@ public class SceneController : MonoBehaviour
     public int endCaseFitnessValue = int.MaxValue;
 
     public List<BuildDecisionsChromosome> solutions = new List<BuildDecisionsChromosome>();
+
+    public ResultStats resultsStats = new ResultStats();
 
     private object mapInstanceLock = new object();
 
@@ -81,7 +83,6 @@ public class SceneController : MonoBehaviour
 
         state = SceneState.Idle;
     }
-
 
 	void Update ()
 	{
@@ -129,10 +130,11 @@ public class SceneController : MonoBehaviour
 	                state = SceneState.Idle;
 
                     //check for solutions
-
 	                foreach (Map mapInstance in mapInstances)
 	                {
 	                    if (mapInstance.lives > 0)
+	                        if (solutions.Count == 0)
+	                            resultsStats.firstSolutionGeneration = ga.generationNo;
 	                        solutions.Add(mapInstance.buildDecisionsChromosome);
 	                }
 
@@ -195,6 +197,10 @@ public class SceneController : MonoBehaviour
 
     public void StartEvolve()
     {
+        //add stats for last generation
+        resultsStats.AddGenerationStats(ga.generationNo, ga.population);
+
+        waveManager.ResetWaves();
         ga.EvolvePopulation();
         for (int i = 0; i < ga.population.Count; i++)
         {
@@ -208,13 +214,13 @@ public class SceneController : MonoBehaviour
         foreach (Map mapInstance in mapInstances)
             mapInstance.MapStart();
 
-        waveManager.ResetWaves();
         waveManager.SpawnWave(0);
     }
 
     private void OnGAFinish()
     {
         Debug.Log("GA Finished");
+        resultsStats.AppendUsageStatsToLog(solutions);
     }
 
     private void OnWaveFinished(int i)
