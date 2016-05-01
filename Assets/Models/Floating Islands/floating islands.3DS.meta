@@ -1,0 +1,540 @@
+fileFormatVersion: 2
+guid: 09bae80af209c9043b9964ea59619887
+timeCreated: 1462111591
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: Camera01
+    100002: Camera01.target
+    100004: //RootNode
+    100006: GeoSphere0
+    100008: Grass
+    100010: Grass01
+    100012: Grass02
+    100014: ground
+    100016: ground01
+    100018: ground02
+    100020: Island
+    100022: Island01
+    100024: Island02
+    100026: Rock
+    100028: Tree
+    100030: Tree rou10
+    100032: Tree rou11
+    100034: Tree rou12
+    100036: Tree rou13
+    100038: Tree rou14
+    100040: Tree rou15
+    100042: Tree rou16
+    100044: Tree rou17
+    100046: Tree rou18
+    100048: Tree rou19
+    100050: Tree rou20
+    100052: Tree rou21
+    100054: Tree rou22
+    100056: Tree rou23
+    100058: Tree rou24
+    100060: Tree rou25
+    100062: Tree rou26
+    100064: Tree rou27
+    100066: Tree rou28
+    100068: Tree rou29
+    100070: Tree rou30
+    100072: Tree rou31
+    100074: Tree rou32
+    100076: Tree rou33
+    100078: Tree rou34
+    100080: Tree rou35
+    100082: Tree rou36
+    100084: Tree rou37
+    100086: Tree rou38
+    100088: Tree rou39
+    100090: Tree roun0
+    100092: Tree roun1
+    100094: Tree roun2
+    100096: Tree roun3
+    100098: Tree roun4
+    100100: Tree roun5
+    100102: Tree roun6
+    100104: Tree roun7
+    100106: Tree roun8
+    100108: Tree roun9
+    100110: Tree round
+    100112: Tree01
+    100114: Tree02
+    100116: Tree03
+    100118: Tree04
+    100120: Tree05
+    100122: Tree06
+    100124: Tree07
+    100126: Tree08
+    100128: Tree09
+    100130: Tree10
+    100132: Tree11
+    100134: Tree12
+    100136: Tree13
+    100138: Tree14
+    100140: Tree15
+    100142: Tree16
+    100144: Tree17
+    100146: Tree18
+    100148: Tree19
+    100150: Tree20
+    100152: Tree21
+    100154: Tree22
+    100156: Tree23
+    100158: Tree24
+    100160: Tree25
+    100162: Tree26
+    100164: Tree27
+    100166: Tree28
+    100168: Tree29
+    100170: Tree30
+    100172: Tree31
+    100174: Tree32
+    100176: Tree33
+    100178: Tree34
+    100180: Tree35
+    100182: Tree36
+    100184: Tree37
+    100186: Tree38
+    100188: Tree39
+    100190: Tree40
+    100192: Treetrun10
+    100194: Treetrun11
+    100196: Treetrun12
+    100198: Treetrun13
+    100200: Treetrun14
+    100202: Treetrun15
+    100204: Treetrun16
+    100206: Treetrun17
+    100208: Treetrun18
+    100210: Treetrun19
+    100212: Treetrun20
+    100214: Treetrun21
+    100216: Treetrun22
+    100218: Treetrun23
+    100220: Treetrun24
+    100222: Treetrun25
+    100224: Treetrun26
+    100226: Treetrun27
+    100228: Treetrun28
+    100230: Treetrun29
+    100232: Treetrun30
+    100234: Treetrun31
+    100236: Treetrun32
+    100238: Treetrun33
+    100240: Treetrun34
+    100242: Treetrun35
+    100244: Treetrun36
+    100246: Treetrun37
+    100248: Treetrun38
+    100250: Treetrun39
+    100252: Treetrunk
+    100254: Treetrunk0
+    100256: Treetrunk1
+    100258: Treetrunk2
+    100260: Treetrunk3
+    100262: Treetrunk4
+    100264: Treetrunk5
+    100266: Treetrunk6
+    100268: Treetrunk7
+    100270: Treetrunk8
+    100272: Treetrunk9
+    100274: Water
+    100276: Water01
+    400000: Camera01
+    400002: Camera01.target
+    400004: //RootNode
+    400006: GeoSphere0
+    400008: Grass
+    400010: Grass01
+    400012: Grass02
+    400014: ground
+    400016: ground01
+    400018: ground02
+    400020: Island
+    400022: Island01
+    400024: Island02
+    400026: Rock
+    400028: Tree
+    400030: Tree rou10
+    400032: Tree rou11
+    400034: Tree rou12
+    400036: Tree rou13
+    400038: Tree rou14
+    400040: Tree rou15
+    400042: Tree rou16
+    400044: Tree rou17
+    400046: Tree rou18
+    400048: Tree rou19
+    400050: Tree rou20
+    400052: Tree rou21
+    400054: Tree rou22
+    400056: Tree rou23
+    400058: Tree rou24
+    400060: Tree rou25
+    400062: Tree rou26
+    400064: Tree rou27
+    400066: Tree rou28
+    400068: Tree rou29
+    400070: Tree rou30
+    400072: Tree rou31
+    400074: Tree rou32
+    400076: Tree rou33
+    400078: Tree rou34
+    400080: Tree rou35
+    400082: Tree rou36
+    400084: Tree rou37
+    400086: Tree rou38
+    400088: Tree rou39
+    400090: Tree roun0
+    400092: Tree roun1
+    400094: Tree roun2
+    400096: Tree roun3
+    400098: Tree roun4
+    400100: Tree roun5
+    400102: Tree roun6
+    400104: Tree roun7
+    400106: Tree roun8
+    400108: Tree roun9
+    400110: Tree round
+    400112: Tree01
+    400114: Tree02
+    400116: Tree03
+    400118: Tree04
+    400120: Tree05
+    400122: Tree06
+    400124: Tree07
+    400126: Tree08
+    400128: Tree09
+    400130: Tree10
+    400132: Tree11
+    400134: Tree12
+    400136: Tree13
+    400138: Tree14
+    400140: Tree15
+    400142: Tree16
+    400144: Tree17
+    400146: Tree18
+    400148: Tree19
+    400150: Tree20
+    400152: Tree21
+    400154: Tree22
+    400156: Tree23
+    400158: Tree24
+    400160: Tree25
+    400162: Tree26
+    400164: Tree27
+    400166: Tree28
+    400168: Tree29
+    400170: Tree30
+    400172: Tree31
+    400174: Tree32
+    400176: Tree33
+    400178: Tree34
+    400180: Tree35
+    400182: Tree36
+    400184: Tree37
+    400186: Tree38
+    400188: Tree39
+    400190: Tree40
+    400192: Treetrun10
+    400194: Treetrun11
+    400196: Treetrun12
+    400198: Treetrun13
+    400200: Treetrun14
+    400202: Treetrun15
+    400204: Treetrun16
+    400206: Treetrun17
+    400208: Treetrun18
+    400210: Treetrun19
+    400212: Treetrun20
+    400214: Treetrun21
+    400216: Treetrun22
+    400218: Treetrun23
+    400220: Treetrun24
+    400222: Treetrun25
+    400224: Treetrun26
+    400226: Treetrun27
+    400228: Treetrun28
+    400230: Treetrun29
+    400232: Treetrun30
+    400234: Treetrun31
+    400236: Treetrun32
+    400238: Treetrun33
+    400240: Treetrun34
+    400242: Treetrun35
+    400244: Treetrun36
+    400246: Treetrun37
+    400248: Treetrun38
+    400250: Treetrun39
+    400252: Treetrunk
+    400254: Treetrunk0
+    400256: Treetrunk1
+    400258: Treetrunk2
+    400260: Treetrunk3
+    400262: Treetrunk4
+    400264: Treetrunk5
+    400266: Treetrunk6
+    400268: Treetrunk7
+    400270: Treetrunk8
+    400272: Treetrunk9
+    400274: Water
+    400276: Water01
+    2300000: GeoSphere0
+    2300002: Grass
+    2300004: Grass01
+    2300006: Grass02
+    2300008: ground
+    2300010: ground01
+    2300012: ground02
+    2300014: Rock
+    2300016: Tree rou10
+    2300018: Tree rou11
+    2300020: Tree rou12
+    2300022: Tree rou13
+    2300024: Tree rou14
+    2300026: Tree rou15
+    2300028: Tree rou16
+    2300030: Tree rou17
+    2300032: Tree rou18
+    2300034: Tree rou19
+    2300036: Tree rou20
+    2300038: Tree rou21
+    2300040: Tree rou22
+    2300042: Tree rou23
+    2300044: Tree rou24
+    2300046: Tree rou25
+    2300048: Tree rou26
+    2300050: Tree rou27
+    2300052: Tree rou28
+    2300054: Tree rou29
+    2300056: Tree rou30
+    2300058: Tree rou31
+    2300060: Tree rou32
+    2300062: Tree rou33
+    2300064: Tree rou34
+    2300066: Tree rou35
+    2300068: Tree rou36
+    2300070: Tree rou37
+    2300072: Tree rou38
+    2300074: Tree rou39
+    2300076: Tree roun0
+    2300078: Tree roun1
+    2300080: Tree roun2
+    2300082: Tree roun3
+    2300084: Tree roun4
+    2300086: Tree roun5
+    2300088: Tree roun6
+    2300090: Tree roun7
+    2300092: Tree roun8
+    2300094: Tree roun9
+    2300096: Tree round
+    2300098: Treetrun10
+    2300100: Treetrun11
+    2300102: Treetrun12
+    2300104: Treetrun13
+    2300106: Treetrun14
+    2300108: Treetrun15
+    2300110: Treetrun16
+    2300112: Treetrun17
+    2300114: Treetrun18
+    2300116: Treetrun19
+    2300118: Treetrun20
+    2300120: Treetrun21
+    2300122: Treetrun22
+    2300124: Treetrun23
+    2300126: Treetrun24
+    2300128: Treetrun25
+    2300130: Treetrun26
+    2300132: Treetrun27
+    2300134: Treetrun28
+    2300136: Treetrun29
+    2300138: Treetrun30
+    2300140: Treetrun31
+    2300142: Treetrun32
+    2300144: Treetrun33
+    2300146: Treetrun34
+    2300148: Treetrun35
+    2300150: Treetrun36
+    2300152: Treetrun37
+    2300154: Treetrun38
+    2300156: Treetrun39
+    2300158: Treetrunk
+    2300160: Treetrunk0
+    2300162: Treetrunk1
+    2300164: Treetrunk2
+    2300166: Treetrunk3
+    2300168: Treetrunk4
+    2300170: Treetrunk5
+    2300172: Treetrunk6
+    2300174: Treetrunk7
+    2300176: Treetrunk8
+    2300178: Treetrunk9
+    2300180: Water
+    2300182: Water01
+    3300000: GeoSphere0
+    3300002: Grass
+    3300004: Grass01
+    3300006: Grass02
+    3300008: ground
+    3300010: ground01
+    3300012: ground02
+    3300014: Rock
+    3300016: Tree rou10
+    3300018: Tree rou11
+    3300020: Tree rou12
+    3300022: Tree rou13
+    3300024: Tree rou14
+    3300026: Tree rou15
+    3300028: Tree rou16
+    3300030: Tree rou17
+    3300032: Tree rou18
+    3300034: Tree rou19
+    3300036: Tree rou20
+    3300038: Tree rou21
+    3300040: Tree rou22
+    3300042: Tree rou23
+    3300044: Tree rou24
+    3300046: Tree rou25
+    3300048: Tree rou26
+    3300050: Tree rou27
+    3300052: Tree rou28
+    3300054: Tree rou29
+    3300056: Tree rou30
+    3300058: Tree rou31
+    3300060: Tree rou32
+    3300062: Tree rou33
+    3300064: Tree rou34
+    3300066: Tree rou35
+    3300068: Tree rou36
+    3300070: Tree rou37
+    3300072: Tree rou38
+    3300074: Tree rou39
+    3300076: Tree roun0
+    3300078: Tree roun1
+    3300080: Tree roun2
+    3300082: Tree roun3
+    3300084: Tree roun4
+    3300086: Tree roun5
+    3300088: Tree roun6
+    3300090: Tree roun7
+    3300092: Tree roun8
+    3300094: Tree roun9
+    3300096: Tree round
+    3300098: Treetrun10
+    3300100: Treetrun11
+    3300102: Treetrun12
+    3300104: Treetrun13
+    3300106: Treetrun14
+    3300108: Treetrun15
+    3300110: Treetrun16
+    3300112: Treetrun17
+    3300114: Treetrun18
+    3300116: Treetrun19
+    3300118: Treetrun20
+    3300120: Treetrun21
+    3300122: Treetrun22
+    3300124: Treetrun23
+    3300126: Treetrun24
+    3300128: Treetrun25
+    3300130: Treetrun26
+    3300132: Treetrun27
+    3300134: Treetrun28
+    3300136: Treetrun29
+    3300138: Treetrun30
+    3300140: Treetrun31
+    3300142: Treetrun32
+    3300144: Treetrun33
+    3300146: Treetrun34
+    3300148: Treetrun35
+    3300150: Treetrun36
+    3300152: Treetrun37
+    3300154: Treetrun38
+    3300156: Treetrun39
+    3300158: Treetrunk
+    3300160: Treetrunk0
+    3300162: Treetrunk1
+    3300164: Treetrunk2
+    3300166: Treetrunk3
+    3300168: Treetrunk4
+    3300170: Treetrunk5
+    3300172: Treetrunk6
+    3300174: Treetrunk7
+    3300176: Treetrunk8
+    3300178: Treetrunk9
+    3300180: Water
+    3300182: Water01
+    4300000: Rock
+    4300002: Grass
+    4300004: ground
+    4300006: Treetrunk
+    4300008: Tree round
+    4300010: Water
+    4300012: GeoSphere0
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleRotations: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
