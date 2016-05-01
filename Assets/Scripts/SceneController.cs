@@ -217,11 +217,19 @@ public class SceneController : MonoBehaviour
         waveManager.SpawnWave(0);
     }
 
-    private void OnGAFinish()
+    public void StopGA()
+    {
+        resultsStats.AddGenerationStats(ga.generationNo, ga.population);
+        OnGAFinish();
+    }
+
+    public void OnGAFinish()
     {
         Debug.Log("GA Finished");
+        
         resultsStats.AppendUsageStatsToLog(solutions);
         state = SceneState.Finished;
+        System.Diagnostics.Process.Start(resultsStats.filePath);
     }
 
     private void OnWaveFinished(int i)

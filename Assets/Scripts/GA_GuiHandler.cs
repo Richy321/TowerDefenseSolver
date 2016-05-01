@@ -54,8 +54,10 @@ public class GA_GuiHandler : MonoBehaviour
 	    spawnNoValueLabel.text = sceneController.waveManager.waveSpawnIndex.ToString();
 	    highestFitnessValueLabel.text = sceneController.ga.highestFitness.ToString();
 	    solutionsValueLabel.text = sceneController.solutions.Count.ToString();
-	    remainingEnemiesValueLabel.text = sceneController.RemainingEnemies.ToString();
-	    sceneStateValueLabel.text = sceneController.state.ToString();
+        if(remainingEnemiesValueLabel != null)
+            remainingEnemiesValueLabel.text = sceneController.RemainingEnemies.ToString();
+        if(sceneStateValueLabel != null)
+            sceneStateValueLabel.text = sceneController.state.ToString();
 	}
 
     Text FindTextComponent(string goName)

@@ -68,8 +68,10 @@ public class BaseTower : MonoBehaviour
         {
             if (Time.time >= nextMoveTime)
             {
-                
-				Vector3 aimPoint = new Vector3(target.position.x + aimError, target.position.y + aimError, target.position.z + aimError);
+                float aimHeight = muzzlePositions.Length > 0 ? muzzlePositions[0].position.y : turretBall.position.y; //avoid tilting mesh down towards the target
+                //target.position.y
+
+                Vector3 aimPoint = new Vector3(target.position.x + aimError, aimHeight + aimError, target.position.z + aimError);
 				
 				//TODO - find better way to do with without 2x rotations.
 				Quaternion origRot = turretBall.rotation;

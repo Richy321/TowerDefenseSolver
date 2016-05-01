@@ -1,12 +1,12 @@
 Generation #0
 Population Fitness:
-70
-70
-70
-70
-70
-70
-70
+0
+0
+0
+0
+0
+0
+0
 0
 0
 0
@@ -18,25 +18,8 @@ Population Fitness:
 0
 
 Overall Usage Stats
-First Solution Generation: 0
+First Solution Generation: -1
 TowerUsage
-SingleDamage 0.5
-None 0.3571429
-Slow 0.1428571
 
 TileUsage
-8,1 0.07142857
-15,11 0.07142857
-11,1 0.07142857
-16,7 0.07142857
-1,0 0.07142857
-3,5 0.07142857
-14,6 0.07142857
-9,5 0.07142857
-12,17 0.07142857
-15,9 0.07142857
-6,17 0.07142857
-15,16 0.07142857
-16,11 0.07142857
-17,4 0.07142857
 
