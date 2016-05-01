@@ -6,14 +6,6 @@ using System.Linq;
 
 public class WaveManager : MonoBehaviour
 {
-    public class Wave
-    {
-        public EnemyType type;
-        public int count;
-        public float spawnInterval;
-        public float difficultyMultiplier = 1.0f;
-    }
-
     public bool isActive;
     public bool isInWave;
     public int waveIndex;
@@ -28,7 +20,6 @@ public class WaveManager : MonoBehaviour
     
 
     private static WaveManager instance;
-
     public static WaveManager Instance
     {
         get
@@ -39,6 +30,8 @@ public class WaveManager : MonoBehaviour
         }
     }
 
+    public GameObject WavesContainer;
+        
     void Start ()
     {
         if(maps.Count == 0)
@@ -96,7 +89,7 @@ public class WaveManager : MonoBehaviour
 
     private Wave CreateTestWave()
     {
-        Wave test = new Wave();
+        Wave test = WavesContainer.AddComponent<Wave>();
         test.type = EnemyType.Fast;
         test.count = 10;
         test.spawnInterval = 2.0f;
@@ -106,11 +99,16 @@ public class WaveManager : MonoBehaviour
 
     private void CreateIncreasingDifficultyWaves(int count)
     {
+        for (int i = 0; i < WavesContainer.transform.childCount; i++)
+        {
+            Destroy(WavesContainer.transform.GetChild(i));
+        }
+
         float difficultyMultiplier = 1.0f;
 
         for (int i = 0; i < count; i++)
         {
-            Wave wave = new Wave();
+            Wave wave = WavesContainer.AddComponent<Wave>();
             wave.type = EnemyType.Fast;
             wave.count = (int)(10 * difficultyMultiplier);
             wave.spawnInterval = 2.0f;

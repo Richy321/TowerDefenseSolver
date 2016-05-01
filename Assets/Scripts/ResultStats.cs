@@ -9,8 +9,8 @@ namespace Assets.Scripts
     public class ResultStats
     {
         List<ResultsStatsGeneration> generationStats = new List<ResultsStatsGeneration>();
-        Dictionary<TowerType, float> towerUsage;
-        Dictionary<UInt16, float> tileUsage;
+        Dictionary<TowerType, float> towerUsage = new Dictionary<TowerType, float>();
+        Dictionary<UInt16, float> tileUsage = new Dictionary<ushort, float>();
         public int firstSolutionGeneration = -1;
 
         public string filePath = "Results.txt";
@@ -22,9 +22,11 @@ namespace Assets.Scripts
 
             ResultsStatsGeneration genStat = new ResultsStatsGeneration();
             genStat.GenerationNo = generationNo;
+
             foreach (BuildDecisionsChromosome buildDecisionsChromosome in chromosomes)
                 genStat.mapFitnessValues.Add(buildDecisionsChromosome.Fitness);
-            
+
+            genStat.mapFitnessValues.Sort((i, i1) => i1.CompareTo(i));
             generationStats.Add(genStat);
             AppendStatsToLog(genStat);
         }
@@ -34,15 +36,52 @@ namespace Assets.Scripts
             using (StreamWriter w = File.AppendText(filePath))
             {
                 w.WriteLine("Generation #" + genStat.GenerationNo);
-                w.WriteLine("Population Fitness:" + genStat.GenerationNo);
+                w.WriteLine("Population Fitness:");
                 foreach (int mapFitnessValue in genStat.mapFitnessValues)
-                    w.WriteLine("mapFitnessValue");
+                    w.WriteLine(mapFitnessValue.ToString());
                 w.WriteLine();
             }
         }
 
+        public void CalculateUsageStats(List<BuildDecisionsChromosome> chromosomes)
+        {
+            float totalFitness = 0;
+            foreach (BuildDecisionsChromosome buildDecisionsChromosome in chromosomes)
+            {
+                foreach (BuildDecision buildDecisionGene in buildDecisionsChromosome.buildDecisionGenes)
+                {
+                    if(!towerUsage.ContainsKey(buildDecisionGene.towerType))
+                        towerUsage.Add(buildDecisionGene.towerType, 0.0f);
+
+                    towerUsage[buildDecisionGene.towerType] += buildDecisionsChromosome.Fitness;
+
+                    //pack coords into a ushort to use as key
+                    ushort packed = (ushort)((buildDecisionGene.gridXCoord & 0xFF) << 8);
+                    packed |= (ushort)(buildDecisionGene.gridZCoord & 0xFF);
+
+                    if(!tileUsage.ContainsKey(packed))
+                        tileUsage.Add(packed, 0.0f);
+
+                    tileUsage[packed] += buildDecisionsChromosome.Fitness;
+
+                    totalFitness += buildDecisionsChromosome.Fitness;
+                }
+            }
+
+            //calc weighted percentages
+            IEnumerable<TowerType> keys = new List<TowerType>(towerUsage.Keys);
+            foreach (TowerType key in keys)
+                towerUsage[key] /= totalFitness;
+
+            IEnumerable<ushort> tileKeys = new List<ushort>(tileUsage.Keys);
+            foreach (ushort key in tileKeys)
+                tileUsage[key] /= totalFitness;
+        }
+
         public void AppendUsageStatsToLog(List<BuildDecisionsChromosome> chromosomes)
         {
+            CalculateUsageStats(chromosomes);
+
             using (StreamWriter w = File.AppendText(filePath))
             {
                 w.WriteLine("Overall Usage Stats");
@@ -54,6 +93,7 @@ namespace Assets.Scripts
                 w.WriteLine("TileUsage");
                 foreach (KeyValuePair<UInt16, float> keyValuePair in tileUsage)
                 {
+                    //unpack coords as bytes
                     byte upper = (byte) (keyValuePair.Key >> 8);
                     byte lower = (byte) (keyValuePair.Key & 0xff);
                     w.WriteLine(upper + "," + lower + " " + keyValuePair.Value);

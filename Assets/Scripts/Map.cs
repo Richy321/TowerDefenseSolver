@@ -503,29 +503,6 @@ public class Map : MonoBehaviour, IMap
         }
     }
 
-    public void GenerateDecisionTick(int tickNumber)
-    {
-        TowerType randomTowerType;
-
-        if ((randomTowerType = GetRandomAffordableTowerType()) != TowerType.None) 
-        {
-            //pick location at random
-            GridNode randomNode = GetRandomPlaceableNode();
-
-            AddTower(randomNode.gridZ, randomNode.gridX, randomTowerType, true);
-
-            buildDecisionsChromosome.buildDecisionGenes.Add(
-                new BuildDecision { towerType = randomTowerType,
-                gridXCoord = randomNode.gridX,
-                gridZCoord = randomNode.gridZ
-            });
-        }
-        else
-        {
-            buildDecisionsChromosome.buildDecisionGenes.Add(new BuildDecision { towerType = TowerType.None});
-        }
-    }
-
     public void Reset()
     {
         resources = StartingResources;

@@ -34,8 +34,6 @@ public class SceneController : MonoBehaviour
 
     public int generateMapsCount = 16;
 
-    public bool isSimulating = false; //is simulating or generating initial population
-
     private bool autoEvolve = true;
     public bool AutoEvolve
     {
@@ -71,6 +69,8 @@ public class SceneController : MonoBehaviour
         }
     }
 
+    public bool UseResources = false;
+
     // Use this for initialization
     void Start ()
     {
@@ -86,7 +86,7 @@ public class SceneController : MonoBehaviour
 
 	void Update ()
 	{
-	    if (state == SceneState.Idle)
+	    if (state == SceneState.Idle || state == SceneState.Finished)
 	        return;
 
 	    lock (mapInstanceLock)
@@ -133,9 +133,11 @@ public class SceneController : MonoBehaviour
 	                foreach (Map mapInstance in mapInstances)
 	                {
 	                    if (mapInstance.lives > 0)
+	                    {
 	                        if (solutions.Count == 0)
 	                            resultsStats.firstSolutionGeneration = ga.generationNo;
 	                        solutions.Add(mapInstance.buildDecisionsChromosome);
+	                    }
 	                }
 
                     if (AutoEvolve)
@@ -168,7 +170,6 @@ public class SceneController : MonoBehaviour
     public void StartGA()
     {
         //Create initial population
-        isSimulating = false;
         decisionTimeCounter = 0.0f;
         decisionTickCounter = 0;
 
@@ -192,7 +193,6 @@ public class SceneController : MonoBehaviour
         initial.AddRange(mapInstances.Select(mapInstance => mapInstance.buildDecisionsChromosome));
         ga.SetInitialPopulation(initial);
         state = SceneState.FindingFitnessValues;
-        isSimulating = true;
     }
 
     public void StartEvolve()
@@ -221,6 +221,7 @@ public class SceneController : MonoBehaviour
     {
         Debug.Log("GA Finished");
         resultsStats.AppendUsageStatsToLog(solutions);
+        state = SceneState.Finished;
     }
 
     private void OnWaveFinished(int i)
@@ -237,10 +238,7 @@ public class SceneController : MonoBehaviour
     {
         foreach (Map mapInstance in mapInstances)
         {
-            if(isSimulating)
-                mapInstance.SimulateDecisionTick(i);
-            else
-                mapInstance.GenerateDecisionTick(i);
+            mapInstance.SimulateDecisionTick(i);
         }
     }
 
